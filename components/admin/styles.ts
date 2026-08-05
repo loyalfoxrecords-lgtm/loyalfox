@@ -32,7 +32,6 @@ const base: React.CSSProperties = {
 };
 
 export const hs = {
-  // Títulos de sección
   title: {
     ...base,
     fontSize: "18px",
@@ -48,7 +47,6 @@ export const hs = {
     marginBottom: "24px",
   } as React.CSSProperties,
 
-  // Card contenedor
   card: {
     background: css.white,
     border: `1px solid ${css.border}`,
@@ -56,7 +54,6 @@ export const hs = {
     overflow: "hidden",
   } as React.CSSProperties,
 
-  // Header de card
   cardHeader: {
     padding: "16px 20px",
     borderBottom: `1px solid ${css.border}`,
@@ -72,7 +69,6 @@ export const hs = {
     color: css.text,
   } as React.CSSProperties,
 
-  // Formularios
   form: {
     background: css.white,
     border: `1px solid ${css.border}`,
@@ -105,7 +101,6 @@ export const hs = {
     transition: "border-color .15s",
   } as React.CSSProperties,
 
-  // Tabla
   tableHeader: {
     ...base,
     fontSize: "11px",
@@ -143,7 +138,6 @@ export const hs = {
     margin: 0,
   } as React.CSSProperties,
 
-  // Botones
   btnGreen: {
     ...base,
     padding: "7px 14px",
@@ -185,7 +179,20 @@ export const hs = {
     whiteSpace: "nowrap" as const,
   } as React.CSSProperties,
 
-  // Badges
+  btnGhost: {
+    ...base,
+    padding: "7px 14px",
+    borderRadius: "6px",
+    border: `1px solid ${css.border}`,
+    background: "transparent",
+    color: css.textSub,
+    fontSize: "13px",
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "all .15s",
+    whiteSpace: "nowrap" as const,
+  } as React.CSSProperties,
+
   badgeGreen: {
     ...base,
     display: "inline-flex",
@@ -264,7 +271,6 @@ export const hs = {
     border: `1px solid ${css.border}`,
   } as React.CSSProperties,
 
-  // Sección
   section: {
     background: css.white,
     border: `1px solid ${css.border}`,
@@ -282,7 +288,6 @@ export const hs = {
     background: css.white,
   } as React.CSSProperties,
 
-  // Separador
   divider: {
     height: "1px",
     background: css.border,
