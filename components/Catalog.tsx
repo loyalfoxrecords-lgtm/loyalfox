@@ -10,6 +10,7 @@ type Track = {
   bpm: number; image_url: string; slug: string;
 };
 const GENRES = ["all","house","deep","techno","ambient"];
+const LIMIT  = 12; // 2 filas de 6
 
 export default function Catalog() {
   const { t } = useLocale();
@@ -17,6 +18,7 @@ export default function Catalog() {
   const [active, setActive]   = useState("all");
   const [tracks, setTracks]   = useState<Track[]>([]);
   const [hovered, setHovered] = useState<string|null>(null);
+  const [showAll, setShowAll] = useState(false);
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target:ref, offset:["start end","end start"] });
   const headerX = useTransform(scrollYProgress, [0,0.3], [-40,0]);
@@ -27,7 +29,12 @@ export default function Catalog() {
       .then(({data}) => { if(data) setTracks(data); });
   }, []);
 
+  // Reset showAll cuando cambia el filtro
+  useEffect(() => { setShowAll(false); }, [active]);
+
   const filtered = active==="all" ? tracks : tracks.filter(tr=>tr.genre?.toLowerCase()===active);
+  const visible  = showAll ? filtered : filtered.slice(0, LIMIT);
+  const hasMore  = filtered.length > LIMIT && !showAll;
 
   /* ── MÓVIL ── */
   if (isMobile) return (
@@ -50,9 +57,8 @@ export default function Catalog() {
             DEL SELLO
           </span>
         </h2>
-        {/* Filtros scroll horizontal */}
         <div style={{ display:"flex", gap:"6px", overflowX:"auto",
-          paddingBottom:"4px", scrollbarWidth:"none" }}>
+          paddingBottom:"4px", scrollbarWidth:"none" as any }}>
           {GENRES.map(g => (
             <button key={g} onClick={() => setActive(g)}
               style={{ fontFamily:"var(--font-mono)", fontSize:"9px",
@@ -68,9 +74,8 @@ export default function Catalog() {
         </div>
       </div>
 
-      {/* Grid 2 columnas */}
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"2px" }}>
-        {filtered.map((track,i) => (
+        {filtered.slice(0,8).map((track,i) => (
           <a key={track.id}
             href={track.slug?`/catalog/${track.slug}`:"#"}
             style={{ position:"relative", display:"block",
@@ -102,6 +107,18 @@ export default function Catalog() {
         ))}
       </div>
 
+      {/* Ver catálogo completo móvil */}
+      <div style={{ padding:"16px 20px 0" }}>
+        <a href="/catalog"
+          style={{ display:"block", padding:"14px", textAlign:"center",
+            background:"#a8e63d", color:"#080808",
+            fontFamily:"var(--font-mono)", fontSize:"10px",
+            letterSpacing:"3px", textTransform:"uppercase",
+            fontWeight:700, textDecoration:"none" }}>
+          Ver catálogo completo →
+        </a>
+      </div>
+
       {/* Spotify banner móvil */}
       <div style={{ margin:"24px 20px 0", padding:"24px 20px",
         background:"#0d0d0d", border:"1px solid rgba(168,230,61,0.1)",
@@ -126,7 +143,7 @@ export default function Catalog() {
     </section>
   );
 
-  /* ── DESKTOP ── (original sin cambios) */
+  /* ── DESKTOP ── */
   return (
     <section ref={ref} id="catalog" style={{ padding:"140px 0",
       background:"var(--black)", position:"relative", overflow:"hidden" }}>
@@ -135,6 +152,7 @@ export default function Catalog() {
         fontFamily:"var(--font-display)", fontSize:"clamp(120px,18vw,280px)",
         color:"rgba(240,240,240,0.02)", lineHeight:1,
         userSelect:"none", pointerEvents:"none" }}>01</div>
+
       <motion.div style={{ padding:"0 56px", marginBottom:"80px",
         display:"flex", justifyContent:"space-between",
         alignItems:"flex-end", flexWrap:"wrap", gap:"32px",
@@ -171,6 +189,7 @@ export default function Catalog() {
           ))}
         </div>
       </motion.div>
+
       <AnimatePresence mode="popLayout">
         {filtered.length===0 ? (
           <div style={{ padding:"80px 56px", textAlign:"center" }}>
@@ -180,7 +199,7 @@ export default function Catalog() {
         ) : (
           <div style={{ display:"grid",
             gridTemplateColumns:"repeat(auto-fill, minmax(240px,1fr))", gap:"2px" }}>
-            {filtered.map((track,i) => (
+            {visible.map((track,i) => (
               <motion.a key={track.id} href={track.slug?`/catalog/${track.slug}`:"#"}
                 layout initial={{ opacity:0, scale:0.95 }}
                 animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.95 }}
@@ -205,14 +224,11 @@ export default function Catalog() {
                 )}
                 <div style={{ position:"absolute", inset:0,
                   background:"linear-gradient(to top, rgba(8,8,8,0.95) 0%, rgba(8,8,8,0.2) 50%, transparent 100%)" }} />
-                <motion.div style={{ position:"absolute", inset:0,
-                  background:"rgba(168,230,61,0.06)" }}
-                  animate={{ opacity:hovered===track.id?1:0 }}
-                  transition={{ duration:0.3 }} />
+                <motion.div style={{ position:"absolute", inset:0, background:"rgba(168,230,61,0.06)" }}
+                  animate={{ opacity:hovered===track.id?1:0 }} transition={{ duration:0.3 }} />
                 <motion.div style={{ position:"absolute", inset:0, zIndex:3,
                   display:"flex", alignItems:"center", justifyContent:"center" }}
-                  animate={{ opacity:hovered===track.id?1:0 }}
-                  transition={{ duration:0.2 }}>
+                  animate={{ opacity:hovered===track.id?1:0 }} transition={{ duration:0.2 }}>
                   <div style={{ width:"56px", height:"56px", borderRadius:"50%",
                     border:"1.5px solid rgba(168,230,61,0.8)",
                     background:"rgba(8,8,8,0.7)", backdropFilter:"blur(8px)",
@@ -251,6 +267,37 @@ export default function Catalog() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Botones ver más / catálogo completo */}
+      {filtered.length > 0 && (
+        <div style={{ display:"flex", justifyContent:"center",
+          gap:"12px", marginTop:"2px", flexWrap:"wrap" }}>
+          {hasMore && (
+            <button onClick={() => setShowAll(true)}
+              style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
+                letterSpacing:"3px", textTransform:"uppercase",
+                padding:"16px 40px", background:"transparent",
+                border:"1px solid rgba(168,230,61,0.3)",
+                color:"#a8e63d", cursor:"pointer", transition:"all .3s" }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background="#a8e63d"; (e.currentTarget as HTMLElement).style.color="#080808"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background="transparent"; (e.currentTarget as HTMLElement).style.color="#a8e63d"; }}>
+              Ver más ({filtered.length - LIMIT} canciones más)
+            </button>
+          )}
+          <a href="/catalog"
+            style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
+              letterSpacing:"3px", textTransform:"uppercase",
+              padding:"16px 40px", background:"#a8e63d",
+              color:"#080808", fontWeight:700,
+              textDecoration:"none", transition:"all .3s" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background="#c5f560"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background="#a8e63d"; }}>
+            Catálogo completo →
+          </a>
+        </div>
+      )}
+
+      {/* Spotify banner */}
       <div style={{ margin:"80px 56px 0", background:"linear-gradient(135deg,#0d0d0d,#111)",
         border:"1px solid rgba(168,230,61,0.1)", padding:"48px 56px",
         display:"flex", alignItems:"center", justifyContent:"space-between",
