@@ -61,7 +61,7 @@ const SOCIAL_LINKS = [
   { key:"url_spotify",   label:"Spotify",    color:"#1DB954", bg:"rgba(29,185,84,0.1)",  Icon:SpotifyIcon   },
   { key:"url_apple",     label:"Apple Music",color:"#fc3c44", bg:"rgba(252,60,68,0.1)",  Icon:AppleIcon     },
   { key:"url_instagram", label:"Instagram",  color:"#e1306c", bg:"rgba(225,48,108,0.1)", Icon:InstagramIcon },
-  { key:"url_tiktok",    label:"TikTok",     color:"#f0f0f0", bg:"rgba(240,240,240,0.08)",Icon:TikTokIcon  },
+  { key:"url_tiktok",    label:"TikTok",     color:"#f0f0f0", bg:"rgba(240,240,240,0.08)",Icon:TikTokIcon   },
   { key:"url_twitter",   label:"Twitter / X",color:"#f0f0f0", bg:"rgba(240,240,240,0.08)",Icon:TwitterIcon  },
   { key:"url_soundcloud",label:"SoundCloud", color:"#ff5500", bg:"rgba(255,85,0,0.1)",   Icon:SoundCloudIcon},
 ];
@@ -214,7 +214,6 @@ export default function ArtistDetail({ slug }: { slug: string }) {
             </motion.p>
           )}
 
-          {/* Redes sociales con logos */}
           {socialLinks.length > 0 && (
             <motion.div
               initial={{ opacity:0, y:16 }}
@@ -424,15 +423,17 @@ export default function ArtistDetail({ slug }: { slug: string }) {
                 whileInView={{ opacity:1, y:0 }}
                 viewport={{ once:true }}
                 transition={{ duration:0.5, delay:i*0.06 }}
-                onMouseEnter={() => setHovered(`press-${article.id}`)}
-                onMouseLeave={() => setHovered(null)}
+                onMouseEnter={() => {
+                  setHovered(`press-${article.id}`);
+                }}
+                onMouseLeave={() => {
+                  setHovered(null);
+                }}
                 style={{ display:"flex", flexDirection:"column",
                   textDecoration:"none", color:"#f0f0f0",
                   background:"#0d0d0d",
-                  border:"1px solid rgba(255,255,255,0.05)",
-                  overflow:"hidden", transition:"border-color .2s" }}
-                onMouseEnterCapture={(e) => (e.currentTarget as HTMLElement).style.borderColor = "rgba(168,230,61,0.2)"}
-                onMouseLeaveCapture={(e) => (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.05)"}>
+                  border:`1px solid ${hovered===`press-${article.id}`?"rgba(168,230,61,0.2)":"rgba(255,255,255,0.05)"}`,
+                  overflow:"hidden", transition:"border-color .2s" }}>
 
                 {article.image_url && (
                   <div style={{ position:"relative", aspectRatio:"16/9",
