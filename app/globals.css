@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Barlow:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: #080808;
+  color: #f0f0f0;
+  font-family: 'Share Tech Mono', monospace;
+  overflow-x: hidden;
+}
+
+:root {
+  --black:   #080808;
+  --black2:  #0d0d0d;
+  --black3:  #111;
+  --black4:  #161616;
+  --white:   #f0f0f0;
+  --accent:  #a8e63d;
+  --accent2: #8bc429;
+  --muted:   rgba(240,240,240,0.45);
+  --subtle:  rgba(240,240,240,0.15);
+  --border:  rgba(255,255,255,0.07);
+
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-mono:    'Share Tech Mono', monospace;
+  --font-body:    'Barlow', sans-serif;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: var(--font-mono); cursor: pointer; }
+img { display: block; max-width: 100%; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: #080808; }
+::-webkit-scrollbar-thumb { background: rgba(168,230,61,0.3); border-radius: 2px; }
+
+/* Selección */
+::selection { background: rgba(168,230,61,0.2); color: #fff; }
+
+/* Inputs */
+input, textarea, select {
+  font-family: var(--font-mono);
+  color: var(--white);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+input::placeholder, textarea::placeholder { color: rgba(240,240,240,0.2); }
+
+/* Animaciones */
+@keyframes fadeUp   { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
+@keyframes slideLeft{ from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:translateX(0); } }
+@keyframes wave     { 0%,100%{opacity:.3} 50%{opacity:.9} }
+@keyframes spin     { to { transform:rotate(360deg); } }
+@keyframes eq       { from{transform:scaleY(0.3)} to{transform:scaleY(1)} }
+@keyframes marquee  { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+@keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Focus */
+:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
+
+/* Mobile */
+@media (max-width: 768px) {
+  body { font-size: 14px; }
+}
