@@ -198,7 +198,7 @@ export default function Catalog() {
           </div>
         ) : (
           <div style={{ display:"grid",
-            gridTemplateColumns:"repeat(auto-fill, minmax(240px,1fr))", gap:"2px" }}>
+            gridTemplateColumns:"repeat(6, 1fr)", gap:"2px" }}>
             {visible.map((track,i) => (
               <motion.a key={track.id} href={track.slug?`/catalog/${track.slug}`:"#"}
                 layout initial={{ opacity:0, scale:0.95 }}
