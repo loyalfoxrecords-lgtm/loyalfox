@@ -37,14 +37,18 @@ export default function TrackDetail({ slug }: { slug: string }) {
   }, [slug]);
 
   if (loading) return (
-    <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"var(--black)" }}>
-      <p style={{ fontFamily:"var(--font-mono)", fontSize:"11px", color:"var(--muted)", letterSpacing:"4px" }}>CARGANDO...</p>
+    <div style={{ minHeight:"100vh", display:"flex", alignItems:"center",
+      justifyContent:"center", background:"var(--black)" }}>
+      <p style={{ fontFamily:"var(--font-mono)", fontSize:"11px",
+        color:"var(--muted)", letterSpacing:"4px" }}>CARGANDO...</p>
     </div>
   );
 
   if (!track) return (
-    <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"var(--black)" }}>
-      <p style={{ fontFamily:"var(--font-mono)", fontSize:"11px", color:"var(--muted)", letterSpacing:"4px" }}>TRACK NO ENCONTRADO</p>
+    <div style={{ minHeight:"100vh", display:"flex", alignItems:"center",
+      justifyContent:"center", background:"var(--black)" }}>
+      <p style={{ fontFamily:"var(--font-mono)", fontSize:"11px",
+        color:"var(--muted)", letterSpacing:"4px" }}>TRACK NO ENCONTRADO</p>
     </div>
   );
 
@@ -66,7 +70,8 @@ export default function TrackDetail({ slug }: { slug: string }) {
       <section style={{ minHeight:"100vh", background:"var(--black)" }}>
 
         {/* Hero */}
-        <div style={{ position:"relative", background:"var(--black2)", borderBottom:"1px solid rgba(57,255,20,0.08)" }}>
+        <div style={{ position:"relative", background:"var(--black2)",
+          borderBottom:"1px solid rgba(57,255,20,0.08)" }}>
           <div style={{ position:"absolute", inset:0, pointerEvents:"none",
             backgroundImage:"linear-gradient(rgba(57,255,20,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(57,255,20,0.02) 1px, transparent 1px)",
             backgroundSize:"60px 60px" }} />
@@ -76,7 +81,8 @@ export default function TrackDetail({ slug }: { slug: string }) {
 
             {/* Cover */}
             <motion.div
-              initial={{ opacity:0, scale:0.9 }} animate={{ opacity:1, scale:1 }}
+              initial={{ opacity:0, scale:0.9 }}
+              animate={{ opacity:1, scale:1 }}
               transition={{ duration:0.7, ease:[0.22,1,0.36,1] }}
               style={{ width:"260px", height:"260px", flexShrink:0,
                 boxShadow:"0 0 60px rgba(57,255,20,0.15)" }}>
@@ -93,7 +99,9 @@ export default function TrackDetail({ slug }: { slug: string }) {
             </motion.div>
 
             {/* Info */}
-            <motion.div initial={{ opacity:0, y:24 }} animate={{ opacity:1, y:0 }}
+            <motion.div
+              initial={{ opacity:0, y:24 }}
+              animate={{ opacity:1, y:0 }}
               transition={{ duration:0.7, delay:0.15, ease:[0.22,1,0.36,1] }}
               style={{ flex:1, minWidth:"280px" }}>
 
@@ -101,7 +109,8 @@ export default function TrackDetail({ slug }: { slug: string }) {
               <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"20px" }}>
                 <a href="/#catalog"
                   style={{ fontFamily:"var(--font-mono)", fontSize:"10px", letterSpacing:"2px",
-                    textTransform:"uppercase", color:"var(--muted)", textDecoration:"none", transition:"color .2s" }}
+                    textTransform:"uppercase", color:"var(--muted)", textDecoration:"none",
+                    transition:"color .2s" }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = "var(--green)")}
                   onMouseLeave={(e) => (e.currentTarget.style.color = "var(--muted)")}>
                   ← Catálogo
@@ -141,7 +150,7 @@ export default function TrackDetail({ slug }: { slug: string }) {
               {/* Metadata pills */}
               <div style={{ display:"flex", gap:"8px", flexWrap:"wrap", marginBottom:"32px" }}>
                 {[
-                  { label:"Género",   value: track.genre },
+                  { label:"Género",   value: track.genre    },
                   { label:"BPM",      value: String(track.bpm) },
                   { label:"Duración", value: track.duration },
                   { label:"Sello",    value: "LoyalFox Records" },
@@ -149,8 +158,11 @@ export default function TrackDetail({ slug }: { slug: string }) {
                   <div key={item.label} style={{ padding:"10px 18px", background:"var(--black3)",
                     border:"1px solid rgba(57,255,20,0.1)" }}>
                     <p style={{ fontFamily:"var(--font-mono)", fontSize:"8px", letterSpacing:"2px",
-                      textTransform:"uppercase", color:"var(--green)", marginBottom:"4px" }}>{item.label}</p>
-                    <p style={{ fontFamily:"var(--font-mono)", fontSize:"13px", color:"var(--white)" }}>{item.value}</p>
+                      textTransform:"uppercase", color:"var(--green)", marginBottom:"4px" }}>
+                      {item.label}
+                    </p>
+                    <p style={{ fontFamily:"var(--font-mono)", fontSize:"13px",
+                      color:"var(--white)" }}>{item.value}</p>
                   </div>
                 ))}
               </div>
@@ -227,14 +239,18 @@ export default function TrackDetail({ slug }: { slug: string }) {
               marginBottom:"32px" }}>
               Más de <span style={{ color:"var(--green)" }}>{track.artist}</span>
             </h2>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(180px, 1fr))", gap:"2px" }}>
+            <div style={{ display:"grid",
+              gridTemplateColumns:"repeat(auto-fill, minmax(180px, 1fr))", gap:"2px" }}>
               {related.map((tr, i) => (
-                <motion.a key={tr.id} href={`/catalog/${tr.slug}`}
-                  initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
-                  transition={{ duration:0.4, delay: i * 0.06 }}
-                  style={{ position:"relative", background:"var(--black3)", overflow:"hidden",
-                    textDecoration:"none", cursor:"pointer" }}
-                  whileHover="hovered" initial="rest">
+                <motion.a
+                  key={tr.id}
+                  href={`/catalog/${tr.slug}`}
+                  initial={{ opacity:0, y:16 }}
+                  animate={{ opacity:1, y:0 }}
+                  transition={{ duration:0.4, delay:i*0.06 }}
+                  whileHover="hovered"
+                  style={{ position:"relative", background:"var(--black3)",
+                    overflow:"hidden", textDecoration:"none", cursor:"pointer" }}>
 
                   <div style={{ position:"relative", aspectRatio:"1", overflow:"hidden" }}>
                     {tr.image_url ? (
@@ -254,19 +270,22 @@ export default function TrackDetail({ slug }: { slug: string }) {
                   </div>
 
                   <div style={{ padding:"14px" }}>
-                    <motion.p style={{ fontFamily:"var(--font-display)", fontSize:"15px",
-                      lineHeight:1.1, marginBottom:"4px" }}
+                    <motion.p
+                      style={{ fontFamily:"var(--font-display)", fontSize:"15px",
+                        lineHeight:1.1, marginBottom:"4px" }}
                       variants={{ rest:{color:"var(--white)"}, hovered:{color:"var(--green)"} }}
                       transition={{ duration:0.2 }}>
                       {tr.name}
                     </motion.p>
-                    <p style={{ fontFamily:"var(--font-mono)", fontSize:"10px", color:"var(--muted)" }}>
+                    <p style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
+                      color:"var(--muted)" }}>
                       {tr.duration}
                     </p>
                   </div>
 
-                  <motion.span style={{ position:"absolute", bottom:0, left:0, right:0, height:"2px",
-                    background:"var(--green)", transformOrigin:"left", scaleX:0 }}
+                  <motion.span
+                    style={{ position:"absolute", bottom:0, left:0, right:0, height:"2px",
+                      background:"var(--green)", transformOrigin:"left", scaleX:0 }}
                     variants={{ rest:{scaleX:0}, hovered:{scaleX:1} }}
                     transition={{ duration:0.35 }} />
                 </motion.a>
