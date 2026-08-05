@@ -10,7 +10,7 @@ type Track = {
   bpm: number; image_url: string; slug: string;
 };
 const GENRES = ["all","house","deep","techno","ambient"];
-const LIMIT  = 12; // 2 filas de 6
+const LIMIT  = 12;
 
 export default function Catalog() {
   const { t } = useLocale();
@@ -29,12 +29,14 @@ export default function Catalog() {
       .then(({data}) => { if(data) setTracks(data); });
   }, []);
 
-  // Reset showAll cuando cambia el filtro
   useEffect(() => { setShowAll(false); }, [active]);
 
   const filtered = active==="all" ? tracks : tracks.filter(tr=>tr.genre?.toLowerCase()===active);
   const visible  = showAll ? filtered : filtered.slice(0, LIMIT);
   const hasMore  = filtered.length > LIMIT && !showAll;
+
+  const titleLines = (t.catalog?.title || "MÚSICA\nDEL SELLO").split("\n");
+  const genreLabel = (g: string) => g === "all" ? (t.catalog?.eyebrow === "Catalog" ? "All" : t.catalog?.eyebrow === "Katalog" ? "Alle" : "Todo") : g;
 
   /* ── MÓVIL ── */
   if (isMobile) return (
@@ -45,16 +47,16 @@ export default function Catalog() {
           <div style={{ width:"28px", height:"2px", background:"#a8e63d" }} />
           <span style={{ fontFamily:"var(--font-mono)", fontSize:"9px",
             letterSpacing:"3px", textTransform:"uppercase", color:"#a8e63d" }}>
-            Catálogo
+            {t.catalog?.eyebrow || "Catálogo"}
           </span>
         </div>
         <h2 style={{ fontFamily:"var(--font-display)",
           fontSize:"clamp(40px,12vw,64px)", lineHeight:0.9,
           letterSpacing:"-0.5px", color:"var(--white)", marginBottom:"24px" }}>
-          MÚSICA<br />
+          {titleLines[0]}<br />
           <span style={{ color:"transparent",
             WebkitTextStroke:"1.5px rgba(240,240,240,0.12)" }}>
-            DEL SELLO
+            {titleLines[1]}
           </span>
         </h2>
         <div style={{ display:"flex", gap:"6px", overflowX:"auto",
@@ -68,7 +70,7 @@ export default function Catalog() {
                 border: active===g?"1px solid #a8e63d":"1px solid rgba(255,255,255,0.15)",
                 color: active===g?"#080808":"rgba(240,240,240,0.5)",
                 cursor:"pointer", fontWeight:active===g?700:400 }}>
-              {g==="all"?"Todo":g}
+              {genreLabel(g)}
             </button>
           ))}
         </div>
@@ -76,11 +78,9 @@ export default function Catalog() {
 
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"2px" }}>
         {filtered.slice(0,8).map((track,i) => (
-          <a key={track.id}
-            href={track.slug?`/catalog/${track.slug}`:"#"}
-            style={{ position:"relative", display:"block",
-              aspectRatio:"1", overflow:"hidden",
-              background:"#111", textDecoration:"none" }}>
+          <a key={track.id} href={track.slug?`/catalog/${track.slug}`:"#"}
+            style={{ position:"relative", display:"block", aspectRatio:"1",
+              overflow:"hidden", background:"#111", textDecoration:"none" }}>
             {track.image_url ? (
               <div style={{ position:"absolute", inset:0,
                 backgroundImage:`url(${track.image_url})`,
@@ -97,9 +97,7 @@ export default function Catalog() {
               background:"linear-gradient(to top, rgba(8,8,8,0.95) 0%, transparent 60%)" }} />
             <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"12px 10px" }}>
               <p style={{ fontFamily:"var(--font-display)", fontSize:"14px",
-                lineHeight:1, marginBottom:"2px", color:"#f0f0f0" }}>
-                {track.name}
-              </p>
+                lineHeight:1, marginBottom:"2px", color:"#f0f0f0" }}>{track.name}</p>
               <p style={{ fontFamily:"var(--font-mono)", fontSize:"9px",
                 color:"rgba(240,240,240,0.45)" }}>{track.artist}</p>
             </div>
@@ -107,7 +105,6 @@ export default function Catalog() {
         ))}
       </div>
 
-      {/* Ver catálogo completo móvil */}
       <div style={{ padding:"16px 20px 0" }}>
         <a href="/catalog"
           style={{ display:"block", padding:"14px", textAlign:"center",
@@ -115,29 +112,27 @@ export default function Catalog() {
             fontFamily:"var(--font-mono)", fontSize:"10px",
             letterSpacing:"3px", textTransform:"uppercase",
             fontWeight:700, textDecoration:"none" }}>
-          Ver catálogo completo →
+          {t.catalog?.viewAll || "Ver catálogo completo →"}
         </a>
       </div>
 
-      {/* Spotify banner móvil */}
       <div style={{ margin:"24px 20px 0", padding:"24px 20px",
         background:"#0d0d0d", border:"1px solid rgba(168,230,61,0.1)",
         display:"flex", flexDirection:"column", gap:"16px" }}>
         <p style={{ fontFamily:"var(--font-display)", fontSize:"22px",
           letterSpacing:"1px", color:"var(--white)" }}>
-          ESCÚCHANOS EN SPOTIFY
+          {t.catalog?.spotify || "ESCÚCHANOS EN SPOTIFY"}
         </p>
         <a href="https://open.spotify.com" target="_blank" rel="noreferrer"
           style={{ display:"flex", alignItems:"center", justifyContent:"center",
-            gap:"8px", padding:"14px",
-            background:"#1DB954", color:"#000",
+            gap:"8px", padding:"14px", background:"#1DB954", color:"#000",
             fontFamily:"var(--font-mono)", fontSize:"10px",
             letterSpacing:"2px", textTransform:"uppercase",
             fontWeight:700, textDecoration:"none" }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
           </svg>
-          Abrir playlist
+          {t.catalog?.spotifyBtn || "Abrir playlist"}
         </a>
       </div>
     </section>
@@ -162,15 +157,17 @@ export default function Catalog() {
             <div style={{ width:"40px", height:"2px", background:"#a8e63d" }} />
             <span style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
               letterSpacing:"4px", textTransform:"uppercase", color:"#a8e63d" }}>
-              01 — {t.catalog?.eyebrow||"Catálogo"}
+              01 — {t.catalog?.eyebrow || "Catálogo"}
             </span>
           </div>
           <h2 style={{ fontFamily:"var(--font-display)",
             fontSize:"clamp(56px,8vw,110px)", lineHeight:0.88,
             letterSpacing:"-1px", color:"var(--white)" }}>
-            MÚSICA<br />
+            {titleLines[0]}<br />
             <span style={{ color:"transparent",
-              WebkitTextStroke:"2px rgba(240,240,240,0.12)" }}>DEL SELLO</span>
+              WebkitTextStroke:"2px rgba(240,240,240,0.12)" }}>
+              {titleLines[1]}
+            </span>
           </h2>
         </div>
         <div style={{ display:"flex", gap:"2px", flexWrap:"wrap" }}>
@@ -184,7 +181,7 @@ export default function Catalog() {
                 cursor:"pointer", transition:"all .25s", fontWeight:active===g?700:400 }}
               onMouseEnter={(e) => { if(active!==g){ (e.currentTarget as HTMLElement).style.borderColor="#a8e63d"; (e.currentTarget as HTMLElement).style.color="#a8e63d"; }}}
               onMouseLeave={(e) => { if(active!==g){ (e.currentTarget as HTMLElement).style.borderColor="rgba(255,255,255,0.1)"; (e.currentTarget as HTMLElement).style.color="rgba(240,240,240,0.4)"; }}}>
-              {g==="all"?"Todo":g}
+              {genreLabel(g)}
             </button>
           ))}
         </div>
@@ -268,7 +265,6 @@ export default function Catalog() {
         )}
       </AnimatePresence>
 
-      {/* Botones ver más / catálogo completo */}
       {filtered.length > 0 && (
         <div style={{ display:"flex", justifyContent:"center",
           gap:"12px", marginTop:"2px", flexWrap:"wrap" }}>
@@ -281,7 +277,7 @@ export default function Catalog() {
                 color:"#a8e63d", cursor:"pointer", transition:"all .3s" }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background="#a8e63d"; (e.currentTarget as HTMLElement).style.color="#080808"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background="transparent"; (e.currentTarget as HTMLElement).style.color="#a8e63d"; }}>
-              Ver más ({filtered.length - LIMIT} canciones más)
+              {t.catalog?.viewMore || "Ver más"} ({filtered.length - LIMIT})
             </button>
           )}
           <a href="/catalog"
@@ -292,12 +288,11 @@ export default function Catalog() {
               textDecoration:"none", transition:"all .3s" }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background="#c5f560"; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background="#a8e63d"; }}>
-            Catálogo completo →
+            {t.catalog?.viewAll || "Catálogo completo →"}
           </a>
         </div>
       )}
 
-      {/* Spotify banner */}
       <div style={{ margin:"80px 56px 0", background:"linear-gradient(135deg,#0d0d0d,#111)",
         border:"1px solid rgba(168,230,61,0.1)", padding:"48px 56px",
         display:"flex", alignItems:"center", justifyContent:"space-between",
@@ -317,11 +312,11 @@ export default function Catalog() {
           <div>
             <p style={{ fontFamily:"var(--font-display)", fontSize:"28px",
               letterSpacing:"1px", color:"var(--white)", marginBottom:"4px" }}>
-              ESCÚCHANOS EN SPOTIFY
+              {t.catalog?.spotify || "ESCÚCHANOS EN SPOTIFY"}
             </p>
             <p style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
               color:"rgba(240,240,240,0.3)", letterSpacing:"1px" }}>
-              Actualizado continuamente
+              {t.catalog?.spotifySub || "Actualizado continuamente"}
             </p>
           </div>
         </div>
@@ -336,7 +331,7 @@ export default function Catalog() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
           </svg>
-          Abrir playlist
+          {t.catalog?.spotifyBtn || "Abrir playlist"}
         </a>
       </div>
     </section>

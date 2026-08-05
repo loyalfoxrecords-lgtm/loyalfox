@@ -3,10 +3,12 @@ import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { useIsMobile } from "@/lib/useIsMobile";
+import { useLocale } from "@/lib/LocaleContext";
 
 type Artist = { id:string; name:string; genre:string; image_url:string; slug:string; bio:string; };
 
 export default function Artists() {
+  const { t } = useLocale();
   const [artists, setArtists] = useState<Artist[]>([]);
   const [hovered, setHovered] = useState<string|null>(null);
   const isMobile = useIsMobile();
@@ -20,6 +22,8 @@ export default function Artists() {
       .then(({data}) => { if(data) setArtists(data); });
   }, []);
 
+  const titleLines = (t.artists?.title || "NUESTROS\nARTISTAS").split("\n");
+
   /* ── MÓVIL ── */
   if (isMobile) return (
     <section id="artists" style={{ padding:"80px 0 60px",
@@ -29,26 +33,27 @@ export default function Artists() {
           <div style={{ width:"28px", height:"2px", background:"#a8e63d" }} />
           <span style={{ fontFamily:"var(--font-mono)", fontSize:"9px",
             letterSpacing:"3px", textTransform:"uppercase", color:"#a8e63d" }}>
-            Artistas
+            {t.artists?.eyebrow || "Artistas"}
           </span>
         </div>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
           <h2 style={{ fontFamily:"var(--font-display)",
             fontSize:"clamp(40px,12vw,64px)", lineHeight:0.9,
             letterSpacing:"-0.5px", color:"var(--white)" }}>
-            NUESTROS<br />
+            {titleLines[0]}<br />
             <span style={{ color:"transparent",
-              WebkitTextStroke:"1.5px rgba(240,240,240,0.12)" }}>ARTISTAS</span>
+              WebkitTextStroke:"1.5px rgba(240,240,240,0.12)" }}>
+              {titleLines[1]}
+            </span>
           </h2>
           <a href="/artists" style={{ fontFamily:"var(--font-mono)", fontSize:"9px",
             letterSpacing:"2px", textTransform:"uppercase",
             color:"rgba(240,240,240,0.4)", textDecoration:"none" }}>
-            Ver todos →
+            {t.artists?.viewMore || "Ver todos →"}
           </a>
         </div>
       </div>
 
-      {/* Grid 2 columnas */}
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"2px" }}>
         {artists.map((artist,i) => (
           <a key={artist.id} href={`/artists/${artist.slug}`}
@@ -70,44 +75,38 @@ export default function Artists() {
               background:"linear-gradient(to top, rgba(8,8,8,0.95) 0%, transparent 60%)" }} />
             <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"12px 10px" }}>
               <p style={{ fontFamily:"var(--font-display)", fontSize:"16px",
-                lineHeight:1, marginBottom:"2px", color:"#f0f0f0" }}>
-                {artist.name}
-              </p>
+                lineHeight:1, marginBottom:"2px", color:"#f0f0f0" }}>{artist.name}</p>
               {artist.genre && (
                 <p style={{ fontFamily:"var(--font-mono)", fontSize:"8px",
                   letterSpacing:"1px", textTransform:"uppercase",
                   color:"rgba(240,240,240,0.4)" }}>{artist.genre}</p>
               )}
             </div>
-            <div style={{ position:"absolute", left:0, top:0, bottom:0, width:"2px",
-              background:"#a8e63d" }} />
+            <div style={{ position:"absolute", left:0, top:0, bottom:0, width:"2px", background:"#a8e63d" }} />
           </a>
         ))}
       </div>
 
-      {/* CTA demo móvil */}
       <div style={{ margin:"24px 20px 0", padding:"24px 20px",
         background:"#111", border:"1px solid rgba(168,230,61,0.08)" }}>
         <p style={{ fontFamily:"var(--font-display)", fontSize:"22px",
-          letterSpacing:"1px", color:"var(--white)", marginBottom:"16px",
-          lineHeight:1.1 }}>
-          ¿ERES ARTISTA?{" "}
-          <span style={{ color:"#a8e63d" }}>ENVÍANOS TU DEMO</span>
+          letterSpacing:"1px", color:"var(--white)", marginBottom:"16px", lineHeight:1.1 }}>
+          {t.artists?.ctaTitle || "¿ERES ARTISTA?"}{" "}
+          <span style={{ color:"#a8e63d" }}>{t.artists?.ctaGreen || "ENVÍANOS TU DEMO"}</span>
         </p>
         <a href="/send-demo"
           style={{ display:"block", padding:"14px",
             border:"1px solid rgba(168,230,61,0.4)",
             color:"#a8e63d", textDecoration:"none",
             fontFamily:"var(--font-mono)", fontSize:"10px",
-            letterSpacing:"3px", textTransform:"uppercase",
-            textAlign:"center" }}>
-          Enviar demo →
+            letterSpacing:"3px", textTransform:"uppercase", textAlign:"center" }}>
+          {t.artists?.ctaBtn || "Enviar demo →"}
         </a>
       </div>
     </section>
   );
 
-  /* ── DESKTOP ── (original) */
+  /* ── DESKTOP ── */
   return (
     <section ref={ref} id="artists" style={{ padding:"140px 0",
       background:"var(--black2)", position:"relative", overflow:"hidden" }}>
@@ -116,6 +115,7 @@ export default function Artists() {
         fontFamily:"var(--font-display)", fontSize:"clamp(150px,22vw,320px)",
         color:"rgba(240,240,240,0.018)", lineHeight:1,
         userSelect:"none", pointerEvents:"none" }}>02</div>
+
       <motion.div style={{ padding:"0 56px", marginBottom:"80px",
         display:"flex", justifyContent:"space-between",
         alignItems:"flex-end", flexWrap:"wrap", gap:"24px",
@@ -125,15 +125,17 @@ export default function Artists() {
             <div style={{ width:"40px", height:"2px", background:"#a8e63d" }} />
             <span style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
               letterSpacing:"4px", textTransform:"uppercase", color:"#a8e63d" }}>
-              02 — Artistas
+              02 — {t.artists?.eyebrow || "Artistas"}
             </span>
           </div>
           <h2 style={{ fontFamily:"var(--font-display)",
             fontSize:"clamp(56px,8vw,110px)", lineHeight:0.88,
             letterSpacing:"-1px", color:"var(--white)" }}>
-            NUESTROS<br />
+            {titleLines[0]}<br />
             <span style={{ color:"transparent",
-              WebkitTextStroke:"2px rgba(240,240,240,0.12)" }}>ARTISTAS</span>
+              WebkitTextStroke:"2px rgba(240,240,240,0.12)" }}>
+              {titleLines[1]}
+            </span>
           </h2>
         </div>
         <a href="/artists" style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
@@ -141,9 +143,10 @@ export default function Artists() {
           color:"rgba(240,240,240,0.4)", textDecoration:"none", transition:"color .2s" }}
           onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color="#a8e63d"}
           onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color="rgba(240,240,240,0.4)"}>
-          Ver todos →
+          {t.artists?.viewMore || "Ver todos →"}
         </a>
       </motion.div>
+
       {artists.length===0 ? (
         <div style={{ padding:"80px 56px", textAlign:"center" }}>
           <p style={{ fontFamily:"var(--font-mono)", fontSize:"11px",
@@ -207,6 +210,7 @@ export default function Artists() {
           ))}
         </div>
       )}
+
       <motion.div initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }}
         viewport={{ once:true }} transition={{ duration:0.8 }}
         style={{ margin:"80px 56px 0", padding:"40px 56px", background:"#111",
@@ -214,17 +218,17 @@ export default function Artists() {
           alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:"32px" }}>
         <p style={{ fontFamily:"var(--font-display)", fontSize:"28px",
           letterSpacing:"1px", color:"var(--white)", maxWidth:"480px", lineHeight:1.1 }}>
-          ¿ERES ARTISTA?{" "}
-          <span style={{ color:"#a8e63d" }}>ENVÍANOS TU DEMO</span>{" "}
-          Y ÚNETE AL SELLO.
+          {t.artists?.ctaTitle || "¿ERES ARTISTA?"}{" "}
+          <span style={{ color:"#a8e63d" }}>{t.artists?.ctaGreen || "ENVÍANOS TU DEMO"}</span>{" "}
+          {t.artists?.ctaSuffix || "Y ÚNETE AL SELLO."}
         </p>
-        <a href="#contact" style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
+        <a href="/send-demo" style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
           letterSpacing:"3px", textTransform:"uppercase",
           padding:"16px 36px", border:"1px solid rgba(168,230,61,0.4)",
           color:"#a8e63d", textDecoration:"none", transition:"all .3s" }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background="#a8e63d"; (e.currentTarget as HTMLElement).style.color="#080808"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background="transparent"; (e.currentTarget as HTMLElement).style.color="#a8e63d"; }}>
-          Enviar demo →
+          {t.artists?.ctaBtn || "Enviar demo →"}
         </a>
       </motion.div>
     </section>
