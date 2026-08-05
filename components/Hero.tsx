@@ -27,14 +27,14 @@ export default function Hero() {
       ]);
       const fmtN = (n:number) => n>=1000000?`${(n/1000000).toFixed(1)}M`:n>=1000?`${(n/1000).toFixed(1)}K`:String(n);
       setStats([
-        { n:String(tracks?.length||0),  l:"Tracks"   },
-        { n:fmtN(analytics?.reduce((a,m)=>a+(m.total_streams||0),0)||0), l:"Streams" },
-        { n:String(artists?.length||0), l:"Artistas" },
-        { n:"2025", l:"Fundado" },
+        { n:String(tracks?.length||0),  l:t.stats?.tracks   || "Tracks"   },
+        { n:fmtN(analytics?.reduce((a,m)=>a+(m.total_streams||0),0)||0), l:t.stats?.followers || "Streams" },
+        { n:String(artists?.length||0), l:t.stats?.artists  || "Artistas" },
+        { n:"2025", l:t.about?.founded || "Fundado" },
       ]);
     };
     load();
-  }, []);
+  }, [t]);
 
   /* ── MÓVIL ── */
   if (isMobile) return (
@@ -56,7 +56,7 @@ export default function Hero() {
           <span style={{ fontFamily:"var(--font-mono)", fontSize:"9px",
             letterSpacing:"3px", textTransform:"uppercase",
             color:"rgba(168,230,61,0.8)" }}>
-            Electronic Music Label · Est. 2025
+            {t.hero?.eyebrow || "Electronic Music Label · Est. 2025"}
           </span>
         </motion.div>
 
@@ -79,32 +79,29 @@ export default function Hero() {
         <motion.p initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
           transition={{ duration:0.7, delay:0.7 }}
           style={{ fontFamily:"var(--font-mono)", fontSize:"12px",
-            lineHeight:1.8, color:"rgba(240,240,240,0.45)",
-            marginBottom:"28px" }}>
+            lineHeight:1.8, color:"rgba(240,240,240,0.45)", marginBottom:"28px" }}>
           {t.hero?.sub || "Música electrónica de vanguardia. House, deep, ambient."}
         </motion.p>
 
         <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
           transition={{ duration:0.7, delay:0.9 }}
-          style={{ display:"flex", flexDirection:"column", gap:"10px", marginBottom:"0" }}>
+          style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
           <a href="#catalog"
             style={{ fontFamily:"var(--font-mono)", fontSize:"11px",
               letterSpacing:"3px", textTransform:"uppercase",
               padding:"16px", background:"#a8e63d", color:"#080808",
               fontWeight:700, textDecoration:"none", textAlign:"center" }}>
-            Escuchar música
+            {t.hero?.cta1 || "Escuchar música"}
           </a>
           <a href="/send-demo"
             style={{ fontFamily:"var(--font-mono)", fontSize:"11px",
               letterSpacing:"3px", textTransform:"uppercase",
               padding:"16px", border:"1px solid rgba(240,240,240,0.2)",
-              color:"rgba(240,240,240,0.6)", textDecoration:"none",
-              textAlign:"center" }}>
-            Enviar demo
+              color:"rgba(240,240,240,0.6)", textDecoration:"none", textAlign:"center" }}>
+            {t.hero?.cta2 || "Enviar demo"}
           </a>
         </motion.div>
 
-        {/* Stats bar móvil */}
         <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
           transition={{ delay:1.2 }}
           style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)",
@@ -142,6 +139,7 @@ export default function Hero() {
         style={{ position:"absolute", left:"48px", top:"15%", bottom:"15%",
           width:"2px", background:"linear-gradient(to bottom, transparent, #a8e63d, transparent)",
           transformOrigin:"top", zIndex:5 }} />
+
       <motion.div style={{ position:"relative", zIndex:10, height:"100%",
         display:"flex", flexDirection:"column", justifyContent:"center",
         padding:"0 80px 100px", y:textY }}>
@@ -151,9 +149,10 @@ export default function Hero() {
           <div style={{ width:"40px", height:"1px", background:"#a8e63d" }} />
           <span style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
             letterSpacing:"4px", textTransform:"uppercase", color:"rgba(168,230,61,0.8)" }}>
-            Electronic Music Label · Est. 2025
+            {t.hero?.eyebrow || "Electronic Music Label · Est. 2025"}
           </span>
         </motion.div>
+
         <div style={{ marginBottom:"48px" }}>
           {["LOYAL","FOX","RECORDS"].map((word,i) => (
             <div key={word} style={{ overflow:"hidden", lineHeight:0.85 }}>
@@ -169,6 +168,7 @@ export default function Hero() {
             </div>
           ))}
         </div>
+
         <div style={{ display:"flex", alignItems:"flex-end", gap:"64px", flexWrap:"wrap" }}>
           <motion.p initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
             transition={{ duration:0.7, delay:0.8 }}
@@ -187,7 +187,7 @@ export default function Hero() {
                 fontWeight:700, textDecoration:"none", transition:"all .3s" }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background="#c5f560"; (e.currentTarget as HTMLElement).style.transform="translateY(-2px)"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background="#a8e63d"; (e.currentTarget as HTMLElement).style.transform="none"; }}>
-              Escuchar música
+              {t.hero?.cta1 || "Escuchar música"}
             </a>
             <a href="/send-demo"
               style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
@@ -196,11 +196,12 @@ export default function Hero() {
                 color:"rgba(240,240,240,0.6)", textDecoration:"none", transition:"all .3s" }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor="#a8e63d"; (e.currentTarget as HTMLElement).style.color="#a8e63d"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor="rgba(240,240,240,0.2)"; (e.currentTarget as HTMLElement).style.color="rgba(240,240,240,0.6)"; }}>
-              Enviar demo
+              {t.hero?.cta2 || "Enviar demo"}
             </a>
           </motion.div>
         </div>
       </motion.div>
+
       <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
         transition={{ duration:0.8, delay:1.2 }}
         style={{ position:"absolute", bottom:0, left:0, right:0, zIndex:10,
@@ -219,6 +220,7 @@ export default function Hero() {
           </div>
         ))}
       </motion.div>
+
       <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
         transition={{ delay:1.5 }}
         style={{ position:"absolute", bottom:"80px", right:"48px", zIndex:10,

@@ -3,10 +3,12 @@ import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { useIsMobile } from "@/lib/useIsMobile";
+import { useLocale } from "@/lib/LocaleContext";
 
 type Streamer = { id:string; name:string; slug:string; image_url:string; bio:string; platform:string; };
 
 export default function Streamers() {
+  const { t } = useLocale();
   const [streamers, setStreamers] = useState<Streamer[]>([]);
   const [hovered, setHovered]     = useState<string|null>(null);
   const [mounted, setMounted]     = useState(false);
@@ -25,6 +27,8 @@ export default function Streamers() {
   if (!mounted) return <section ref={ref} />;
   if (streamers.length===0) return <section ref={ref} />;
 
+  const titleLines = (t.streamers?.title || "NUESTRA\nCOMUNIDAD").split("\n");
+
   /* ── MÓVIL ── */
   if (isMobile) return (
     <section id="streamers" style={{ padding:"80px 0 60px",
@@ -34,24 +38,27 @@ export default function Streamers() {
           <div style={{ width:"28px", height:"2px", background:"#a8e63d" }} />
           <span style={{ fontFamily:"var(--font-mono)", fontSize:"9px",
             letterSpacing:"3px", textTransform:"uppercase", color:"#a8e63d" }}>
-            Streamers
+            {t.streamers?.eyebrow || "Streamers"}
           </span>
         </div>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end" }}>
           <h2 style={{ fontFamily:"var(--font-display)",
             fontSize:"clamp(40px,12vw,64px)", lineHeight:0.9,
             letterSpacing:"-0.5px", color:"var(--white)" }}>
-            NUESTRA<br />
+            {titleLines[0]}<br />
             <span style={{ color:"transparent",
-              WebkitTextStroke:"1.5px rgba(240,240,240,0.12)" }}>COMUNIDAD</span>
+              WebkitTextStroke:"1.5px rgba(240,240,240,0.12)" }}>
+              {titleLines[1]}
+            </span>
           </h2>
           <a href="/streamers" style={{ fontFamily:"var(--font-mono)", fontSize:"9px",
             letterSpacing:"2px", textTransform:"uppercase",
             color:"rgba(240,240,240,0.4)", textDecoration:"none" }}>
-            Ver todos →
+            {t.streamers?.viewMore || "Ver todos →"}
           </a>
         </div>
       </div>
+
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"2px" }}>
         {streamers.map((s,i) => (
           <a key={s.id} href={`/streamers/${s.slug}`}
@@ -91,7 +98,7 @@ export default function Streamers() {
     </section>
   );
 
-  /* ── DESKTOP ── (original) */
+  /* ── DESKTOP ── */
   return (
     <section ref={ref} id="streamers" style={{ padding:"140px 0",
       background:"var(--black)", position:"relative", overflow:"hidden" }}>
@@ -99,6 +106,7 @@ export default function Streamers() {
         fontFamily:"var(--font-display)", fontSize:"clamp(150px,22vw,320px)",
         color:"rgba(240,240,240,0.018)", lineHeight:1,
         userSelect:"none", pointerEvents:"none" }}>05</div>
+
       <motion.div style={{ padding:"0 56px", marginBottom:"80px",
         display:"flex", justifyContent:"space-between",
         alignItems:"flex-end", flexWrap:"wrap", gap:"24px",
@@ -108,15 +116,17 @@ export default function Streamers() {
             <div style={{ width:"40px", height:"2px", background:"#a8e63d" }} />
             <span style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
               letterSpacing:"4px", textTransform:"uppercase", color:"#a8e63d" }}>
-              05 — Streamers
+              05 — {t.streamers?.eyebrow || "Streamers"}
             </span>
           </div>
           <h2 style={{ fontFamily:"var(--font-display)",
             fontSize:"clamp(56px,8vw,110px)", lineHeight:0.88,
             letterSpacing:"-1px", color:"var(--white)" }}>
-            NUESTRA<br />
+            {titleLines[0]}<br />
             <span style={{ color:"transparent",
-              WebkitTextStroke:"2px rgba(240,240,240,0.12)" }}>COMUNIDAD</span>
+              WebkitTextStroke:"2px rgba(240,240,240,0.12)" }}>
+              {titleLines[1]}
+            </span>
           </h2>
         </div>
         <a href="/streamers" style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
@@ -124,9 +134,10 @@ export default function Streamers() {
           color:"rgba(240,240,240,0.4)", textDecoration:"none", transition:"color .2s" }}
           onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color="#a8e63d"}
           onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color="rgba(240,240,240,0.4)"}>
-          Ver todos →
+          {t.streamers?.viewMore || "Ver todos →"}
         </a>
       </motion.div>
+
       <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"2px" }}>
         {streamers.map((s,i) => (
           <motion.a key={s.id} href={`/streamers/${s.slug}`}
