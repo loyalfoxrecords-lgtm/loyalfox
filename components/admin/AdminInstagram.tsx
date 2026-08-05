@@ -92,7 +92,8 @@ function Card({ tpl, track, artist, bgUrl, bgBase64 }: {
         <div style={{ position:"absolute", top:"20px", left:0, right:0,
           textAlign:"center", padding:"0 16px", zIndex:5 }}>
           <span style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:"8px",
-            letterSpacing:"3px", textTransform:"uppercase", color:tpl.accent, display:"block", marginBottom:"8px" }}>
+            letterSpacing:"3px", textTransform:"uppercase", color:tpl.accent,
+            display:"block", marginBottom:"8px" }}>
             {tpl.tag}
           </span>
           <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:"30px",
@@ -108,7 +109,8 @@ function Card({ tpl, track, artist, bgUrl, bgBase64 }: {
 
       {isSplit && (
         <div style={{ position:"absolute", top:0, left:0, bottom:0, width:"45%",
-          display:"flex", flexDirection:"column", justifyContent:"center", padding:"16px", zIndex:5 }}>
+          display:"flex", flexDirection:"column", justifyContent:"center",
+          padding:"16px", zIndex:5 }}>
           <span style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:"7px",
             letterSpacing:"2px", textTransform:"uppercase", color:tpl.accent, marginBottom:"8px" }}>
             {tpl.tag}
@@ -127,7 +129,8 @@ function Card({ tpl, track, artist, bgUrl, bgBase64 }: {
 
       {(tpl.layout === "bottom-left" || isBottomRight) && (
         <div style={{ position:"absolute", bottom:0, left:0, right:0,
-          padding:"12px 14px 14px", textAlign:isBottomRight ? "right" : "left", zIndex:5 }}>
+          padding:"12px 14px 14px",
+          textAlign:isBottomRight ? "right" : "left", zIndex:5 }}>
           <span style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:"8px",
             letterSpacing:"2px", textTransform:"uppercase",
             color:tpl.accent, display:"inline-block", marginBottom:"6px" }}>
@@ -152,14 +155,14 @@ function Card({ tpl, track, artist, bgUrl, bgBase64 }: {
 }
 
 export default function AdminInstagram() {
-  const [selected, setSelected]   = useState(TEMPLATES[0].id);
-  const [track, setTrack]         = useState("");
-  const [artist, setArtist]       = useState("");
-  const [genre, setGenre]         = useState("");
-  const [bgUrl, setBgUrl]         = useState("");
-  const [bgBase64, setBgBase64]   = useState("");
-  const [bgStatus, setBgStatus]   = useState<"idle"|"loading"|"ready"|"error">("idle");
-  const [copied, setCopied]       = useState(false);
+  const [selected, setSelected]       = useState(TEMPLATES[0].id);
+  const [track, setTrack]             = useState("");
+  const [artist, setArtist]           = useState("");
+  const [genre, setGenre]             = useState("");
+  const [bgUrl, setBgUrl]             = useState("");
+  const [bgBase64, setBgBase64]       = useState("");
+  const [bgStatus, setBgStatus]       = useState<"idle"|"loading"|"ready"|"error">("idle");
+  const [copied, setCopied]           = useState(false);
   const [downloading, setDownloading] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -201,10 +204,11 @@ export default function AdminInstagram() {
     try {
       const { default: html2canvas } = await import("html2canvas");
       const canvas = await html2canvas(card, {
-        width: 300, height: 300, scale: 3.6,
+        width: 300, height: 300,
         backgroundColor: "#060606",
         useCORS: true, allowTaint: true,
         imageTimeout: 0,
+        ...({ scale: 3.6 } as any),
       });
       const link = document.createElement("a");
       link.download = `loyalfox-${selected}-${(track || "track").toLowerCase().replace(/\s+/g, "-")}.png`;
@@ -282,7 +286,8 @@ export default function AdminInstagram() {
           )}
 
           {/* Template selector */}
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(5, 1fr)", gap:"4px", width:"300px" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(5, 1fr)",
+            gap:"4px", width:"300px" }}>
             {TEMPLATES.map((t) => (
               <button key={t.id} onClick={() => setSelected(t.id)}
                 style={{ padding:"6px 4px",
@@ -374,7 +379,8 @@ export default function AdminInstagram() {
           {/* Tips */}
           <div style={{ padding:"14px", background:"#0e0e0e", border:"1px solid #1a1a1a" }}>
             <p style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:"9px",
-              letterSpacing:"2px", textTransform:"uppercase", color:"#39ff14", marginBottom:"8px" }}>
+              letterSpacing:"2px", textTransform:"uppercase",
+              color:"#39ff14", marginBottom:"8px" }}>
               Instrucciones
             </p>
             <p style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:"10px",
