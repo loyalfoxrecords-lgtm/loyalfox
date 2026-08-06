@@ -13,10 +13,7 @@ export default function Hero() {
   const imgY  = useTransform(scrollYProgress, [0,1], ["0%","25%"]);
   const textY = useTransform(scrollYProgress, [0,1], ["0%","15%"]);
 
-  const [stats, setStats] = useState([
-    { n:"—", l:"Tracks" }, { n:"—", l:"Streams" },
-    { n:"—", l:"Artistas" }, { n:"2025", l:"Fundado" },
-  ]);
+  const [counts, setCounts] = useState({ tracks:0, streams:0, artists:0 });
 
   useEffect(() => {
     const load = async () => {
@@ -25,16 +22,24 @@ export default function Hero() {
         supabase.from("artists").select("id"),
         supabase.from("analytics_monthly").select("total_streams"),
       ]);
-      const fmtN = (n:number) => n>=1000000?`${(n/1000000).toFixed(1)}M`:n>=1000?`${(n/1000).toFixed(1)}K`:String(n);
-      setStats([
-        { n:String(tracks?.length||0),  l:t.stats?.tracks   || "Tracks"   },
-        { n:fmtN(analytics?.reduce((a,m)=>a+(m.total_streams||0),0)||0), l:t.stats?.followers || "Streams" },
-        { n:String(artists?.length||0), l:t.stats?.artists  || "Artistas" },
-        { n:"2025", l:t.about?.founded || "Fundado" },
-      ]);
+      setCounts({
+        tracks:  tracks?.length||0,
+        streams: analytics?.reduce((a,m)=>a+(m.total_streams||0),0)||0,
+        artists: artists?.length||0,
+      });
     };
     load();
-  }, [t]);
+  }, []);
+
+  const fmtN = (n:number) => n>=1000000?`${(n/1000000).toFixed(1)}M`:n>=1000?`${(n/1000).toFixed(1)}K`:String(n);
+
+  // Labels reactivos al idioma — se recalculan cuando cambia t
+  const stats = [
+    { n:String(counts.tracks),  l:t.stats?.tracks    || "Tracks"   },
+    { n:fmtN(counts.streams),   l:t.stats?.followers || "Streams"  },
+    { n:String(counts.artists), l:t.stats?.artists   || "Artistas" },
+    { n:"2025",                 l:t.about?.founded   || "Fundado"  },
+  ];
 
   /* ── MÓVIL ── */
   if (isMobile) return (
@@ -86,7 +91,7 @@ export default function Hero() {
         <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
           transition={{ duration:0.7, delay:0.9 }}
           style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
-          <a href="#catalog"
+          <a href="/#catalog"
             style={{ fontFamily:"var(--font-mono)", fontSize:"11px",
               letterSpacing:"3px", textTransform:"uppercase",
               padding:"16px", background:"#a8e63d", color:"#080808",
@@ -180,7 +185,7 @@ export default function Hero() {
           <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
             transition={{ duration:0.7, delay:1 }}
             style={{ display:"flex", gap:"12px", flexWrap:"wrap" }}>
-            <a href="#catalog"
+            <a href="/#catalog"
               style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
                 letterSpacing:"3px", textTransform:"uppercase",
                 padding:"16px 36px", background:"#a8e63d", color:"#080808",
