@@ -33,7 +33,12 @@ export async function POST(req: NextRequest) {
   if (!contract) return NextResponse.json({ error:"Not found" }, { status:404 });
   if (contract.status === "signed") return NextResponse.json({ error:"Already signed" }, { status:400 });
 
-  // 1. Preparar imagen de firma
+  // Nombre real + nombre artístico
+  const displayName = artist.name
+    ? `${artist.name} (${artist.artist_name})`
+    : artist.artist_name;
+
+  // 1. Imagen de firma
   const base64Data  = signature_data.replace(/^data:image\/png;base64,/, "");
   const sigBuffer   = Buffer.from(base64Data, "base64");
   const sigFilename = `sig-${contract_id}-${Date.now()}.png`;
@@ -53,30 +58,33 @@ export async function POST(req: NextRequest) {
   const lastPage = pages[pages.length - 1];
   const { width } = lastPage.getSize();
 
-  lastPage.drawImage(sigImage, {
-    x: width - 220, y: 60, width: 180, height: 60,
-  });
-
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const signedDate = new Date().toLocaleDateString("es", {
     day:"numeric", month:"long", year:"numeric",
   });
 
+  // Línea separadora
   lastPage.drawLine({
-    start: { x: width - 220, y: 135 },
-    end:   { x: width - 40,  y: 135 },
+    start: { x: width - 240, y: 145 },
+    end:   { x: width - 30,  y: 145 },
     thickness: 0.5,
     color: rgb(0.7, 0.7, 0.7),
   });
 
-  lastPage.drawText(`Firmado por: ${artist.artist_name}`, {
-    x: width - 220, y: 130, size: 9, font, color: rgb(0.3, 0.3, 0.3),
+  // Imagen de firma
+  lastPage.drawImage(sigImage, {
+    x: width - 240, y: 70, width: 200, height: 65,
+  });
+
+  // Texto debajo de la firma
+  lastPage.drawText(`Firmado por: ${displayName}`, {
+    x: width - 240, y: 56, size: 8, font, color: rgb(0.2, 0.2, 0.2),
   });
   lastPage.drawText(`Fecha: ${signedDate}`, {
-    x: width - 220, y: 118, size: 9, font, color: rgb(0.3, 0.3, 0.3),
+    x: width - 240, y: 44, size: 8, font, color: rgb(0.2, 0.2, 0.2),
   });
-  lastPage.drawText(`LoyalFox Records`, {
-    x: width - 220, y: 106, size: 9, font, color: rgb(0.3, 0.3, 0.3),
+  lastPage.drawText(`LoyalFox Records — Contrato firmado digitalmente`, {
+    x: width - 240, y: 32, size: 7, font, color: rgb(0.5, 0.5, 0.5),
   });
 
   // 4. Guardar PDF firmado

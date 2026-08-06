@@ -23,6 +23,7 @@ type Contract = {
   id: string; title: string; description: string; pdf_url: string;
   status: "pending"|"signed"; signature_url: string|null;
   signed_at: string|null; created_at: string;
+  signed_pdf_url: string|null;
 };
 
 const c = {
@@ -330,23 +331,23 @@ export default function ArtistDashboard() {
   };
 
   const signContract = async (contractId:string, signatureData:string) => {
-  setSigningLoading(true);
-  const res = await fetch("/api/artists-portal/contracts/sign", {
-    method:"POST", headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({ contract_id:contractId, signature_data:signatureData }),
-  });
-  if (res.ok) {
-    const data = await res.json();
-    setSignedIds(s => new Set([...s, contractId]));
-    await loadContracts();
-    // Abrir PDF firmado automáticamente
-    if (data.signed_pdf_url) {
-      window.open(data.signed_pdf_url, "_blank");
+    setSigningLoading(true);
+    const res = await fetch("/api/artists-portal/contracts/sign", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ contract_id:contractId, signature_data:signatureData }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setSignedIds(s => new Set([...s, contractId]));
+      await loadContracts();
+      // Abrir PDF firmado automáticamente
+      if (data.signed_pdf_url) {
+        window.open(data.signed_pdf_url, "_blank");
+      }
     }
-  }
-  setSigningId(null);
-  setSigningLoading(false);
-};
+    setSigningId(null);
+    setSigningLoading(false);
+  };
 
   const logout = async () => {
     await fetch("/api/artists-portal/logout", { method:"POST" });
@@ -880,7 +881,7 @@ export default function ArtistDashboard() {
                   </div>
                 )}
 
-                <div style={{ display:"flex", gap:"8px" }}>
+                <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
                   <a href={contract.pdf_url} target="_blank" rel="noreferrer"
                     style={{ ...base, padding:"7px 14px", borderRadius:"6px",
                       border:`1px solid ${c.border}`, background:c.white,
@@ -888,6 +889,15 @@ export default function ArtistDashboard() {
                       textDecoration:"none", display:"inline-flex", alignItems:"center", gap:"6px" }}>
                     📄 {t.contractsViewPdf}
                   </a>
+                  {contract.status==="signed" && contract.signed_pdf_url && (
+                    <a href={contract.signed_pdf_url} target="_blank" rel="noreferrer"
+                      style={{ ...base, padding:"7px 14px", borderRadius:"6px",
+                        border:`1px solid ${c.greenBorder}`, background:c.greenBg,
+                        fontSize:"13px", fontWeight:500, color:c.green,
+                        textDecoration:"none", display:"inline-flex", alignItems:"center", gap:"6px" }}>
+                      ✅ {lang==="en"?"Download signed PDF":"Descargar PDF firmado"}
+                    </a>
+                  )}
                   {contract.status==="pending" && (
                     <button onClick={() => setSigningId(contract.id)} disabled={signingLoading}
                       style={{ ...base, padding:"7px 18px", borderRadius:"6px", border:"none",
