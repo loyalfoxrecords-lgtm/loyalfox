@@ -8,8 +8,8 @@ const LOGO = "https://i.ibb.co/KjqCYGmY/descarga-1.png";
 
 export default function Navbar() {
   const { locale, setLocale, t } = useLocale();
-  const [scrolled, setScrolled]   = useState(false);
-  const [menuOpen, setMenuOpen]   = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -19,12 +19,12 @@ export default function Navbar() {
   }, []);
 
   const links = [
-    { href:"#catalog",   label: t.nav?.music    || "Música"    },
-    { href:"#playlists", label: t.nav?.playlists || "Playlists" },
-    { href:"#artists",   label: t.nav?.artists   || "Artistas"  },
-    { href:"#streamers", label: t.nav?.streamers || "Streamers" },
-    { href:"#about",     label: t.nav?.about     || "Sello"     },
-    { href:"#contact",   label: t.nav?.contact   || "Contacto"  },
+    { href:"/#catalog",   label: t.nav?.music    || "Música"    },
+    { href:"/#playlists", label: t.nav?.playlists || "Playlists" },
+    { href:"/#artists",   label: t.nav?.artists   || "Artistas"  },
+    { href:"/#streamers", label: t.nav?.streamers || "Streamers" },
+    { href:"/#about",     label: t.nav?.about     || "Sello"     },
+    { href:"/#contact",   label: t.nav?.contact   || "Contacto"  },
   ];
 
   /* ── MÓVIL ── */
@@ -52,7 +52,7 @@ export default function Navbar() {
           style={{ background:"none", border:"none", cursor:"pointer",
             padding:"8px", display:"flex", flexDirection:"column",
             gap:"5px", alignItems:"flex-end" }}>
-          <span style={{ display:"block", width:menuOpen?"24px":"24px", height:"1.5px",
+          <span style={{ display:"block", width:"24px", height:"1.5px",
             background:"#f0f0f0", transition:"all .3s",
             transform:menuOpen?"rotate(45deg) translateY(6.5px)":"none" }} />
           <span style={{ display:"block", width:"16px", height:"1.5px",
@@ -64,16 +64,14 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {/* Menú desplegable */}
       {menuOpen && (
         <div style={{
           position:"fixed", top:"60px", left:0, right:0, bottom:0,
           background:"rgba(8,8,8,0.98)", zIndex:199,
           display:"flex", flexDirection:"column",
-          padding:"40px 24px 40px",
-          overflowY:"auto",
+          padding:"40px 24px", overflowY:"auto",
         }}>
-          {links.map((l, i) => (
+          {links.map((l) => (
             <a key={l.href} href={l.href}
               onClick={() => setMenuOpen(false)}
               style={{ fontFamily:"var(--font-display)", fontSize:"36px",
@@ -91,13 +89,11 @@ export default function Navbar() {
               background:"#a8e63d", color:"#080808",
               fontFamily:"var(--font-mono)", fontSize:"11px",
               letterSpacing:"3px", textTransform:"uppercase",
-              fontWeight:700, textDecoration:"none",
-              textAlign:"center" }}>
-            Enviar demo
+              fontWeight:700, textDecoration:"none", textAlign:"center" }}>
+            {t.hero?.cta2 || "Enviar demo"}
           </a>
 
-          <div style={{ display:"flex", gap:"8px", marginTop:"24px",
-            justifyContent:"center" }}>
+          <div style={{ display:"flex", gap:"8px", marginTop:"24px", justifyContent:"center" }}>
             {(["es","en","de"] as const).map((lang) => (
               <button key={lang} onClick={() => setLocale(lang)}
                 style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
@@ -161,7 +157,7 @@ export default function Navbar() {
           textDecoration:"none", transition:"all .2s" }}
         onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background="#c5f560"; }}
         onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background="#a8e63d"; }}>
-        Enviar demo
+        {t.hero?.cta2 || "Enviar demo"}
       </a>
 
       <div style={{ display:"flex", gap:"4px", alignItems:"center", flexShrink:0 }}>
