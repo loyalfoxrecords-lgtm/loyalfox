@@ -51,15 +51,23 @@ export default function SendDemo() {
   const getImg = (key: string, fallbackIndex: number) =>
     images[key] || FALLBACK_IMAGES[fallbackIndex];
 
-  const handleSubmit = async () => {
-    if (!form.name||!form.email||!form.links) {
-      alert("Rellena al menos tu nombre, email y un enlace a tu música"); return;
-    }
-    setSending(true);
-    await new Promise(r => setTimeout(r, 1200));
+ const handleSubmit = async () => {
+  if (!form.name || !form.email || !form.links) {
+    alert("Rellena al menos tu nombre, email y un enlace a tu música"); return;
+  }
+  setSending(true);
+  const res = await fetch("/api/send-demo", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(form),
+  });
+  if (res.ok) {
     setSent(true);
-    setSending(false);
-  };
+  } else {
+    alert("Error al enviar. Inténtalo de nuevo.");
+  }
+  setSending(false);
+};
 
   const inputStyle: React.CSSProperties = {
     width:"100%", padding:"14px 16px",
