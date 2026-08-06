@@ -16,6 +16,69 @@ function toSlug(s: string) {
     .replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 }
 
+// ─── FORMULARIO fuera del componente principal ───
+function PlaylistForm({ data, onChange, onUpload, uploading }: {
+  data: typeof empty;
+  onChange: (d: typeof empty) => void;
+  onUpload: (file: File) => void;
+  uploading: boolean;
+}) {
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"12px" }}>
+        <div>
+          <label style={hs.formLabel}>Nombre *</label>
+          <input placeholder="Nombre de la playlist" value={data.name}
+            onChange={e => onChange({...data, name:e.target.value,
+              slug: data.slug || toSlug(e.target.value) })}
+            style={hs.input} />
+        </div>
+        <div>
+          <label style={hs.formLabel}>Slug (URL)</label>
+          <input placeholder="nombre-playlist" value={data.slug}
+            onChange={e => onChange({...data, slug:e.target.value})}
+            style={hs.input} />
+        </div>
+      </div>
+      <div>
+        <label style={hs.formLabel}>Descripción</label>
+        <textarea placeholder="Descripción de la playlist..." value={data.description}
+          onChange={e => onChange({...data, description:e.target.value})}
+          style={{...hs.input, minHeight:"72px", resize:"vertical" as any}} />
+      </div>
+      <div>
+        <label style={hs.formLabel}>Imagen de portada</label>
+        <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
+          <div style={{ width:"64px", height:"64px", borderRadius:"6px",
+            background:css.bg, border:`1px solid ${css.border}`,
+            overflow:"hidden", flexShrink:0 }}>
+            {data.image_url ? (
+              <img src={data.image_url} alt="cover"
+                style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+            ) : (
+              <div style={{ width:"100%", height:"100%", display:"flex",
+                alignItems:"center", justifyContent:"center",
+                fontSize:"20px", color:css.textMute }}>♫</div>
+            )}
+          </div>
+          <label style={{ display:"inline-flex", alignItems:"center", gap:"6px",
+            padding:"7px 14px", borderRadius:"6px", cursor:"pointer",
+            border:`1px solid ${css.border}`, background:css.white,
+            fontSize:"13px", fontWeight:500, color:css.text, fontFamily:"system-ui" }}>
+            {uploading?"Subiendo...":"Subir imagen"}
+            <input type="file" accept="image/*" style={{ display:"none" }}
+              disabled={uploading}
+              onChange={e => { const f=e.target.files?.[0]; if(f) onUpload(f); }} />
+          </label>
+          {data.image_url && (
+            <p style={{ fontSize:"11px", color:css.green, fontFamily:"system-ui" }}>✓ Lista</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPlaylists() {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [form, setForm]           = useState(empty);
@@ -65,65 +128,6 @@ export default function AdminPlaylists() {
     await load();
   };
 
-  const PlaylistForm = ({ data, onChange, onUpload }: {
-    data: typeof empty;
-    onChange: (d: typeof empty) => void;
-    onUpload: (url: string) => void;
-  }) => (
-    <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"12px" }}>
-        <div>
-          <label style={hs.formLabel}>Nombre *</label>
-          <input placeholder="Nombre de la playlist" value={data.name}
-            onChange={e => onChange({...data, name:e.target.value,
-              slug: data.slug || toSlug(e.target.value) })}
-            style={hs.input} />
-        </div>
-        <div>
-          <label style={hs.formLabel}>Slug (URL)</label>
-          <input placeholder="nombre-playlist" value={data.slug}
-            onChange={e => onChange({...data, slug:e.target.value})}
-            style={hs.input} />
-        </div>
-      </div>
-      <div>
-        <label style={hs.formLabel}>Descripción</label>
-        <textarea placeholder="Descripción de la playlist..." value={data.description}
-          onChange={e => onChange({...data, description:e.target.value})}
-          style={{...hs.input, minHeight:"72px", resize:"vertical" as any}} />
-      </div>
-      <div>
-        <label style={hs.formLabel}>Imagen de portada</label>
-        <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
-          <div style={{ width:"64px", height:"64px", borderRadius:"6px",
-            background:css.bg, border:`1px solid ${css.border}`,
-            overflow:"hidden", flexShrink:0 }}>
-            {data.image_url ? (
-              <img src={data.image_url} alt="cover"
-                style={{ width:"100%", height:"100%", objectFit:"cover" }} />
-            ) : (
-              <div style={{ width:"100%", height:"100%", display:"flex",
-                alignItems:"center", justifyContent:"center",
-                fontSize:"20px", color:css.textMute }}>♫</div>
-            )}
-          </div>
-          <label style={{ display:"inline-flex", alignItems:"center", gap:"6px",
-            padding:"7px 14px", borderRadius:"6px", cursor:"pointer",
-            border:`1px solid ${css.border}`, background:css.white,
-            fontSize:"13px", fontWeight:500, color:css.text, fontFamily:"system-ui" }}>
-            {uploading?"Subiendo...":"Subir imagen"}
-            <input type="file" accept="image/*" style={{ display:"none" }}
-              disabled={uploading}
-              onChange={e => { const f=e.target.files?.[0]; if(f) uploadImage(f,onUpload); }} />
-          </label>
-          {data.image_url && (
-            <p style={{ fontSize:"11px", color:css.green, fontFamily:"system-ui" }}>✓ Lista</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div style={{ maxWidth:"900px" }}>
       <p style={hs.subtitle}>Gestiona las playlists del sello</p>
@@ -133,8 +137,11 @@ export default function AdminPlaylists() {
           <p style={hs.cardTitle}>Nueva playlist</p>
         </div>
         <div style={{ padding:"20px" }}>
-          <PlaylistForm data={form} onChange={setForm}
-            onUpload={(url) => setForm(f => ({...f, image_url:url}))} />
+          <PlaylistForm
+            data={form}
+            onChange={setForm}
+            uploading={uploading}
+            onUpload={(file) => uploadImage(file, (url) => setForm(f => ({...f, image_url:url})))} />
           <div style={{ marginTop:"16px" }}>
             <button onClick={addPlaylist} disabled={loading||uploading}
               style={{ ...hs.btnGreen, opacity:(loading||uploading)?0.7:1 }}>
@@ -179,21 +186,18 @@ export default function AdminPlaylists() {
                     </div>
                   </td>
                   <td style={{ padding:"10px 16px" }}>
-                    <p style={{ fontSize:"13px", fontWeight:500,
-                      color:css.text, fontFamily:"system-ui" }}>{pl.name}</p>
-                    <p style={{ fontSize:"11px", color:css.textMute,
-                      fontFamily:"system-ui" }}>/{pl.slug}</p>
+                    <p style={{ fontSize:"13px", fontWeight:500, color:css.text, fontFamily:"system-ui" }}>{pl.name}</p>
+                    <p style={{ fontSize:"11px", color:css.textMute, fontFamily:"system-ui" }}>/{pl.slug}</p>
                   </td>
-                  <td style={{ padding:"10px 16px", fontSize:"13px",
-                    color:css.textSub, fontFamily:"system-ui",
-                    maxWidth:"300px", overflow:"hidden",
+                  <td style={{ padding:"10px 16px", fontSize:"13px", color:css.textSub,
+                    fontFamily:"system-ui", maxWidth:"300px", overflow:"hidden",
                     textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                     {pl.description || "—"}
                   </td>
                   <td style={{ padding:"10px 16px" }}>
                     <div style={{ display:"flex", gap:"6px" }}>
                       <button onClick={() => {
-                        if(editingId===pl.id){setEditingId(null);return;}
+                        if(editingId===pl.id){ setEditingId(null); return; }
                         setEditingId(pl.id);
                         setEditForm({ name:pl.name, description:pl.description||"",
                           image_url:pl.image_url||"", slug:pl.slug||"" });
@@ -210,8 +214,11 @@ export default function AdminPlaylists() {
                   <tr key={`edit-${pl.id}`}>
                     <td colSpan={4} style={{ padding:"20px 24px",
                       background:css.blueBg, borderBottom:`1px solid ${css.border}` }}>
-                      <PlaylistForm data={editForm} onChange={setEditForm}
-                        onUpload={(url) => setEditForm(f => ({...f, image_url:url}))} />
+                      <PlaylistForm
+                        data={editForm}
+                        onChange={setEditForm}
+                        uploading={uploading}
+                        onUpload={(file) => uploadImage(file, (url) => setEditForm(f => ({...f, image_url:url})))} />
                       <div style={{ display:"flex", gap:"8px", marginTop:"16px" }}>
                         <button onClick={() => saveEdit(pl.id)} disabled={loading}
                           style={{ ...hs.btnGreen, opacity:loading?0.7:1 }}>

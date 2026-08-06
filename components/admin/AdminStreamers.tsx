@@ -23,60 +23,14 @@ function toSlug(s: string) {
 
 const PLATFORMS = ["Twitch","YouTube","Kick","TikTok","Otro"];
 
-export default function AdminStreamers() {
-  const [streamers, setStreamers] = useState<Streamer[]>([]);
-  const [form, setForm]           = useState(empty);
-  const [editingId, setEditingId] = useState<string|null>(null);
-  const [editForm, setEditForm]   = useState(empty);
-  const [loading, setLoading]     = useState(false);
-  const [uploading, setUploading] = useState(false);
-
-  const load = async () => {
-    const { data } = await supabase.from("streamers").select("*")
-      .order("name", { ascending:true });
-    if (data) setStreamers(data);
-  };
-  useEffect(() => { load(); }, []);
-
-  const uploadImage = async (file: File, onDone: (url:string)=>void) => {
-    setUploading(true);
-    const ext  = file.name.split(".").pop();
-    const path = `streamer-${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("streamers").upload(path, file, { upsert:true });
-    if (error) { alert("Error al subir imagen"); setUploading(false); return; }
-    const { data } = supabase.storage.from("streamers").getPublicUrl(path);
-    onDone(data.publicUrl);
-    setUploading(false);
-  };
-
-  const addStreamer = async () => {
-    if (!form.name) { alert("El nombre es obligatorio"); return; }
-    setLoading(true);
-    const slug = form.slug || toSlug(form.name);
-    const { error } = await supabase.from("streamers").insert({ ...form, slug });
-    if (error) alert("Error: "+error.message);
-    else { setForm(empty); await load(); }
-    setLoading(false);
-  };
-
-  const saveEdit = async (id: string) => {
-    setLoading(true);
-    const slug = editForm.slug || toSlug(editForm.name);
-    await supabase.from("streamers").update({ ...editForm, slug }).eq("id", id);
-    setEditingId(null); await load(); setLoading(false);
-  };
-
-  const deleteStreamer = async (id: string) => {
-    if (!confirm("¿Eliminar este streamer?")) return;
-    await supabase.from("streamers").delete().eq("id", id);
-    await load();
-  };
-
-  const StreamerForm = ({ data, onChange, onUpload }: {
-    data: typeof empty;
-    onChange: (d: typeof empty) => void;
-    onUpload: (url: string) => void;
-  }) => (
+// ─── FORMULARIO fuera del componente principal ───
+function StreamerForm({ data, onChange, onUpload, uploading }: {
+  data: typeof empty;
+  onChange: (d: typeof empty) => void;
+  onUpload: (file: File) => void;
+  uploading: boolean;
+}) {
+  return (
     <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"12px" }}>
         <div>
@@ -147,7 +101,7 @@ export default function AdminStreamers() {
             {uploading?"Subiendo...":"Subir foto"}
             <input type="file" accept="image/*" style={{ display:"none" }}
               disabled={uploading}
-              onChange={e => { const f=e.target.files?.[0]; if(f) uploadImage(f,onUpload); }} />
+              onChange={e => { const f=e.target.files?.[0]; if(f) onUpload(f); }} />
           </label>
           {data.image_url && (
             <p style={{ fontSize:"11px", color:css.green, fontFamily:"system-ui" }}>✓ Lista</p>
@@ -156,6 +110,56 @@ export default function AdminStreamers() {
       </div>
     </div>
   );
+}
+
+export default function AdminStreamers() {
+  const [streamers, setStreamers] = useState<Streamer[]>([]);
+  const [form, setForm]           = useState(empty);
+  const [editingId, setEditingId] = useState<string|null>(null);
+  const [editForm, setEditForm]   = useState(empty);
+  const [loading, setLoading]     = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  const load = async () => {
+    const { data } = await supabase.from("streamers").select("*")
+      .order("name", { ascending:true });
+    if (data) setStreamers(data);
+  };
+  useEffect(() => { load(); }, []);
+
+  const uploadImage = async (file: File, onDone: (url:string)=>void) => {
+    setUploading(true);
+    const ext  = file.name.split(".").pop();
+    const path = `streamer-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("streamers").upload(path, file, { upsert:true });
+    if (error) { alert("Error al subir imagen"); setUploading(false); return; }
+    const { data } = supabase.storage.from("streamers").getPublicUrl(path);
+    onDone(data.publicUrl);
+    setUploading(false);
+  };
+
+  const addStreamer = async () => {
+    if (!form.name) { alert("El nombre es obligatorio"); return; }
+    setLoading(true);
+    const slug = form.slug || toSlug(form.name);
+    const { error } = await supabase.from("streamers").insert({ ...form, slug });
+    if (error) alert("Error: "+error.message);
+    else { setForm(empty); await load(); }
+    setLoading(false);
+  };
+
+  const saveEdit = async (id: string) => {
+    setLoading(true);
+    const slug = editForm.slug || toSlug(editForm.name);
+    await supabase.from("streamers").update({ ...editForm, slug }).eq("id", id);
+    setEditingId(null); await load(); setLoading(false);
+  };
+
+  const deleteStreamer = async (id: string) => {
+    if (!confirm("¿Eliminar este streamer?")) return;
+    await supabase.from("streamers").delete().eq("id", id);
+    await load();
+  };
 
   return (
     <div style={{ maxWidth:"1000px" }}>
@@ -166,8 +170,11 @@ export default function AdminStreamers() {
           <p style={hs.cardTitle}>Añadir streamer</p>
         </div>
         <div style={{ padding:"20px" }}>
-          <StreamerForm data={form} onChange={setForm}
-            onUpload={(url) => setForm(f => ({...f, image_url:url}))} />
+          <StreamerForm
+            data={form}
+            onChange={setForm}
+            uploading={uploading}
+            onUpload={(file) => uploadImage(file, (url) => setForm(f => ({...f, image_url:url})))} />
           <div style={{ marginTop:"16px" }}>
             <button onClick={addStreamer} disabled={loading||uploading}
               style={{ ...hs.btnGreen, opacity:(loading||uploading)?0.7:1 }}>
@@ -214,16 +221,13 @@ export default function AdminStreamers() {
                     </div>
                   </td>
                   <td style={{ padding:"10px 16px" }}>
-                    <p style={{ fontSize:"13px", fontWeight:500,
-                      color:css.text, fontFamily:"system-ui" }}>{s.name}</p>
-                    <p style={{ fontSize:"11px", color:css.textMute,
-                      fontFamily:"system-ui" }}>/streamers/{s.slug}</p>
+                    <p style={{ fontSize:"13px", fontWeight:500, color:css.text, fontFamily:"system-ui" }}>{s.name}</p>
+                    <p style={{ fontSize:"11px", color:css.textMute, fontFamily:"system-ui" }}>/streamers/{s.slug}</p>
                   </td>
                   <td style={{ padding:"10px 16px" }}>
                     <span style={hs.badgeGray}>{s.platform}</span>
                     {s.followers && (
-                      <p style={{ fontSize:"11px", color:css.textMute,
-                        marginTop:"2px", fontFamily:"system-ui" }}>
+                      <p style={{ fontSize:"11px", color:css.textMute, marginTop:"2px", fontFamily:"system-ui" }}>
                         {s.followers} seguidores
                       </p>
                     )}
@@ -234,18 +238,15 @@ export default function AdminStreamers() {
                         style={{ fontSize:"11px", color:css.green, fontFamily:"system-ui",
                           textDecoration:"none", padding:"2px 6px",
                           background:css.greenBg, borderRadius:"4px",
-                          border:`1px solid ${css.greenBorder}` }}>
-                        ✓ Spotify
-                      </a>
+                          border:`1px solid ${css.greenBorder}` }}>✓ Spotify</a>
                     ) : (
-                      <span style={{ fontSize:"12px", color:css.textMute,
-                        fontFamily:"system-ui" }}>Sin playlist</span>
+                      <span style={{ fontSize:"12px", color:css.textMute, fontFamily:"system-ui" }}>Sin playlist</span>
                     )}
                   </td>
                   <td style={{ padding:"10px 16px" }}>
                     <div style={{ display:"flex", gap:"6px" }}>
                       <button onClick={() => {
-                        if(editingId===s.id){setEditingId(null);return;}
+                        if(editingId===s.id){ setEditingId(null); return; }
                         setEditingId(s.id);
                         setEditForm({
                           name:s.name, slug:s.slug||"", bio:s.bio||"",
@@ -267,8 +268,11 @@ export default function AdminStreamers() {
                   <tr key={`edit-${s.id}`}>
                     <td colSpan={5} style={{ padding:"20px 24px",
                       background:css.blueBg, borderBottom:`1px solid ${css.border}` }}>
-                      <StreamerForm data={editForm} onChange={setEditForm}
-                        onUpload={(url) => setEditForm(f => ({...f, image_url:url}))} />
+                      <StreamerForm
+                        data={editForm}
+                        onChange={setEditForm}
+                        uploading={uploading}
+                        onUpload={(file) => uploadImage(file, (url) => setEditForm(f => ({...f, image_url:url})))} />
                       <div style={{ display:"flex", gap:"8px", marginTop:"16px" }}>
                         <button onClick={() => saveEdit(s.id)} disabled={loading}
                           style={{ ...hs.btnGreen, opacity:loading?0.7:1 }}>
