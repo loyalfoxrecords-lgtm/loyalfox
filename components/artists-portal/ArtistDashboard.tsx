@@ -330,18 +330,23 @@ export default function ArtistDashboard() {
   };
 
   const signContract = async (contractId:string, signatureData:string) => {
-    setSigningLoading(true);
-    const res = await fetch("/api/artists-portal/contracts/sign", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ contract_id:contractId, signature_data:signatureData }),
-    });
-    if (res.ok) {
-      setSignedIds(s => new Set([...s, contractId]));
-      await loadContracts();
+  setSigningLoading(true);
+  const res = await fetch("/api/artists-portal/contracts/sign", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ contract_id:contractId, signature_data:signatureData }),
+  });
+  if (res.ok) {
+    const data = await res.json();
+    setSignedIds(s => new Set([...s, contractId]));
+    await loadContracts();
+    // Abrir PDF firmado automáticamente
+    if (data.signed_pdf_url) {
+      window.open(data.signed_pdf_url, "_blank");
     }
-    setSigningId(null);
-    setSigningLoading(false);
-  };
+  }
+  setSigningId(null);
+  setSigningLoading(false);
+};
 
   const logout = async () => {
     await fetch("/api/artists-portal/logout", { method:"POST" });
