@@ -3,10 +3,12 @@ import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { useIsMobile } from "@/lib/useIsMobile";
+import { useLocale } from "@/lib/LocaleContext";
 
 type Playlist = { id:string; name:string; image_url:string; description:string; };
 
 export default function Playlists() {
+  const { t } = useLocale();
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [hovered, setHovered]     = useState<string|null>(null);
   const isMobile = useIsMobile();
@@ -20,6 +22,8 @@ export default function Playlists() {
       .then(({data}) => { if(data) setPlaylists(data); });
   }, []);
 
+  const titleLines = (t.playlists?.title || "CURATED\nPLAYLISTS").split("\n");
+
   /* ── MÓVIL ── */
   if (isMobile) return (
     <section id="playlists" style={{ padding:"80px 0 60px",
@@ -29,15 +33,17 @@ export default function Playlists() {
           <div style={{ width:"28px", height:"2px", background:"#a8e63d" }} />
           <span style={{ fontFamily:"var(--font-mono)", fontSize:"9px",
             letterSpacing:"3px", textTransform:"uppercase", color:"#a8e63d" }}>
-            Playlists
+            {t.playlists?.eyebrow || "Playlists"}
           </span>
         </div>
         <h2 style={{ fontFamily:"var(--font-display)",
           fontSize:"clamp(40px,12vw,64px)", lineHeight:0.9,
           letterSpacing:"-0.5px", color:"var(--white)" }}>
-          CURATED<br />
+          {titleLines[0]}<br />
           <span style={{ color:"transparent",
-            WebkitTextStroke:"1.5px rgba(240,240,240,0.12)" }}>PLAYLISTS</span>
+            WebkitTextStroke:"1.5px rgba(240,240,240,0.12)" }}>
+            {titleLines[1]}
+          </span>
         </h2>
       </div>
       {playlists.length===0 ? (
@@ -70,7 +76,7 @@ export default function Playlists() {
                   lineHeight:1, color:"#f0f0f0", marginBottom:"4px" }}>{pl.name}</p>
                 <p style={{ fontFamily:"var(--font-mono)", fontSize:"8px",
                   color:"#a8e63d", letterSpacing:"1px", textTransform:"uppercase" }}>
-                  Escuchar ▶
+                  {t.playlists?.spotifyBtn || "Escuchar"} ▶
                 </p>
               </div>
             </a>
@@ -80,7 +86,7 @@ export default function Playlists() {
     </section>
   );
 
-  /* ── DESKTOP ── (original) */
+  /* ── DESKTOP ── */
   return (
     <section ref={ref} id="playlists" style={{ padding:"140px 0",
       background:"var(--black2)", position:"relative", overflow:"hidden" }}>
@@ -88,6 +94,7 @@ export default function Playlists() {
         fontFamily:"var(--font-display)", fontSize:"clamp(150px,22vw,320px)",
         color:"rgba(240,240,240,0.018)", lineHeight:1,
         userSelect:"none", pointerEvents:"none" }}>04</div>
+
       <motion.div style={{ padding:"0 56px", marginBottom:"80px",
         display:"flex", justifyContent:"space-between",
         alignItems:"flex-end", flexWrap:"wrap", gap:"24px",
@@ -97,15 +104,17 @@ export default function Playlists() {
             <div style={{ width:"40px", height:"2px", background:"#a8e63d" }} />
             <span style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
               letterSpacing:"4px", textTransform:"uppercase", color:"#a8e63d" }}>
-              04 — Playlists
+              04 — {t.playlists?.eyebrow || "Playlists"}
             </span>
           </div>
           <h2 style={{ fontFamily:"var(--font-display)",
             fontSize:"clamp(56px,8vw,110px)", lineHeight:0.88,
             letterSpacing:"-1px", color:"var(--white)" }}>
-            CURATED<br />
+            {titleLines[0]}<br />
             <span style={{ color:"transparent",
-              WebkitTextStroke:"2px rgba(240,240,240,0.12)" }}>PLAYLISTS</span>
+              WebkitTextStroke:"2px rgba(240,240,240,0.12)" }}>
+              {titleLines[1]}
+            </span>
           </h2>
         </div>
         <a href="/playlists" style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
@@ -113,9 +122,10 @@ export default function Playlists() {
           color:"rgba(240,240,240,0.4)", textDecoration:"none", transition:"color .2s" }}
           onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color="#a8e63d"}
           onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color="rgba(240,240,240,0.4)"}>
-          Ver todas →
+          {t.playlists?.viewMore || "Ver todas →"}
         </a>
       </motion.div>
+
       {playlists.length===0 ? (
         <div style={{ padding:"80px 56px", textAlign:"center" }}>
           <p style={{ fontFamily:"var(--font-mono)", fontSize:"11px",

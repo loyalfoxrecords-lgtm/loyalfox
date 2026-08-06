@@ -18,7 +18,6 @@ export default function Catalog() {
   const [active, setActive]   = useState("all");
   const [tracks, setTracks]   = useState<Track[]>([]);
   const [hovered, setHovered] = useState<string|null>(null);
-  const [showAll, setShowAll] = useState(false);
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target:ref, offset:["start end","end start"] });
   const headerX = useTransform(scrollYProgress, [0,0.3], [-40,0]);
@@ -29,14 +28,11 @@ export default function Catalog() {
       .then(({data}) => { if(data) setTracks(data); });
   }, []);
 
-  useEffect(() => { setShowAll(false); }, [active]);
-
   const filtered = active==="all" ? tracks : tracks.filter(tr=>tr.genre?.toLowerCase()===active);
-  const visible  = showAll ? filtered : filtered.slice(0, LIMIT);
-  const hasMore  = filtered.length > LIMIT && !showAll;
+  const visible  = filtered.slice(0, LIMIT);
 
   const titleLines = (t.catalog?.title || "MÚSICA\nDEL SELLO").split("\n");
-  const genreLabel = (g: string) => g === "all" ? (t.catalog?.eyebrow === "Catalog" ? "All" : t.catalog?.eyebrow === "Katalog" ? "Alle" : "Todo") : g;
+  const allLabel = t.catalog?.eyebrow==="Catalog" ? "All" : t.catalog?.eyebrow==="Katalog" ? "Alle" : "Todo";
 
   /* ── MÓVIL ── */
   if (isMobile) return (
@@ -70,7 +66,7 @@ export default function Catalog() {
                 border: active===g?"1px solid #a8e63d":"1px solid rgba(255,255,255,0.15)",
                 color: active===g?"#080808":"rgba(240,240,240,0.5)",
                 cursor:"pointer", fontWeight:active===g?700:400 }}>
-              {genreLabel(g)}
+              {g==="all" ? allLabel : g}
             </button>
           ))}
         </div>
@@ -78,9 +74,11 @@ export default function Catalog() {
 
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"2px" }}>
         {filtered.slice(0,8).map((track,i) => (
-          <a key={track.id} href={track.slug?`/catalog/${track.slug}`:"#"}
-            style={{ position:"relative", display:"block", aspectRatio:"1",
-              overflow:"hidden", background:"#111", textDecoration:"none" }}>
+          <a key={track.id}
+            href={track.slug?`/catalog/${track.slug}`:"#"}
+            style={{ position:"relative", display:"block",
+              aspectRatio:"1", overflow:"hidden",
+              background:"#111", textDecoration:"none" }}>
             {track.image_url ? (
               <div style={{ position:"absolute", inset:0,
                 backgroundImage:`url(${track.image_url})`,
@@ -97,7 +95,9 @@ export default function Catalog() {
               background:"linear-gradient(to top, rgba(8,8,8,0.95) 0%, transparent 60%)" }} />
             <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"12px 10px" }}>
               <p style={{ fontFamily:"var(--font-display)", fontSize:"14px",
-                lineHeight:1, marginBottom:"2px", color:"#f0f0f0" }}>{track.name}</p>
+                lineHeight:1, marginBottom:"2px", color:"#f0f0f0" }}>
+                {track.name}
+              </p>
               <p style={{ fontFamily:"var(--font-mono)", fontSize:"9px",
                 color:"rgba(240,240,240,0.45)" }}>{track.artist}</p>
             </div>
@@ -125,7 +125,8 @@ export default function Catalog() {
         </p>
         <a href="https://open.spotify.com" target="_blank" rel="noreferrer"
           style={{ display:"flex", alignItems:"center", justifyContent:"center",
-            gap:"8px", padding:"14px", background:"#1DB954", color:"#000",
+            gap:"8px", padding:"14px",
+            background:"#1DB954", color:"#000",
             fontFamily:"var(--font-mono)", fontSize:"10px",
             letterSpacing:"2px", textTransform:"uppercase",
             fontWeight:700, textDecoration:"none" }}>
@@ -157,7 +158,7 @@ export default function Catalog() {
             <div style={{ width:"40px", height:"2px", background:"#a8e63d" }} />
             <span style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
               letterSpacing:"4px", textTransform:"uppercase", color:"#a8e63d" }}>
-              01 — {t.catalog?.eyebrow || "Catálogo"}
+              01 — {t.catalog?.eyebrow||"Catálogo"}
             </span>
           </div>
           <h2 style={{ fontFamily:"var(--font-display)",
@@ -181,7 +182,7 @@ export default function Catalog() {
                 cursor:"pointer", transition:"all .25s", fontWeight:active===g?700:400 }}
               onMouseEnter={(e) => { if(active!==g){ (e.currentTarget as HTMLElement).style.borderColor="#a8e63d"; (e.currentTarget as HTMLElement).style.color="#a8e63d"; }}}
               onMouseLeave={(e) => { if(active!==g){ (e.currentTarget as HTMLElement).style.borderColor="rgba(255,255,255,0.1)"; (e.currentTarget as HTMLElement).style.color="rgba(240,240,240,0.4)"; }}}>
-              {genreLabel(g)}
+              {g==="all" ? allLabel : g}
             </button>
           ))}
         </div>
@@ -265,21 +266,9 @@ export default function Catalog() {
         )}
       </AnimatePresence>
 
+      {/* Solo catálogo completo — sin botón ver más */}
       {filtered.length > 0 && (
-        <div style={{ display:"flex", justifyContent:"center",
-          gap:"12px", marginTop:"2px", flexWrap:"wrap" }}>
-          {hasMore && (
-            <button onClick={() => setShowAll(true)}
-              style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
-                letterSpacing:"3px", textTransform:"uppercase",
-                padding:"16px 40px", background:"transparent",
-                border:"1px solid rgba(168,230,61,0.3)",
-                color:"#a8e63d", cursor:"pointer", transition:"all .3s" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background="#a8e63d"; (e.currentTarget as HTMLElement).style.color="#080808"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background="transparent"; (e.currentTarget as HTMLElement).style.color="#a8e63d"; }}>
-              {t.catalog?.viewMore || "Ver más"} ({filtered.length - LIMIT})
-            </button>
-          )}
+        <div style={{ display:"flex", justifyContent:"center", marginTop:"2px" }}>
           <a href="/catalog"
             style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
               letterSpacing:"3px", textTransform:"uppercase",
@@ -293,6 +282,7 @@ export default function Catalog() {
         </div>
       )}
 
+      {/* Spotify banner */}
       <div style={{ margin:"80px 56px 0", background:"linear-gradient(135deg,#0d0d0d,#111)",
         border:"1px solid rgba(168,230,61,0.1)", padding:"48px 56px",
         display:"flex", alignItems:"center", justifyContent:"space-between",

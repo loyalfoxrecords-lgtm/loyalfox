@@ -6,8 +6,8 @@ import { useIsMobile } from "@/lib/useIsMobile";
 import { useLocale } from "@/lib/LocaleContext";
 
 export default function About() {
-  const isMobile = useIsMobile();
   const { t } = useLocale();
+  const isMobile = useIsMobile();
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target:ref, offset:["start end","end start"] });
   const imgScale = useTransform(scrollYProgress, [0,1], [1.15,1]);
@@ -34,18 +34,20 @@ export default function About() {
   const fmtN = (n:number) => n>=1000000?`${(n/1000000).toFixed(1)}M`:n>=1000?`${(n/1000).toFixed(1)}K`:String(n);
 
   const statsData = [
-    { n:String(stats.tracks),  l:t.about?.catalogSub  || "Tracks publicados" },
-    { n:fmtN(stats.streams),   l:t.about?.distroSub   || "Reproducciones"    },
-    { n:String(stats.artists), l:t.about?.genresSub    || "Artistas activos"  },
-    { n:"2025",                l:t.about?.founded      || "Año de fundación"  },
+    { n:String(stats.tracks),  l:t.about?.stat1 || "Tracks publicados" },
+    { n:fmtN(stats.streams),   l:t.about?.stat2 || "Reproducciones"    },
+    { n:String(stats.artists), l:t.about?.stat3 || "Artistas activos"  },
+    { n:"2025",                l:t.about?.stat4 || "Año de fundación"  },
   ];
 
   const values = [
-    { n:"01", title:t.about?.catalog    || "Comunidad",    desc:t.about?.p1 || "Un sello construido sobre relaciones reales entre artistas, oyentes y creadores de contenido." },
-    { n:"02", title:t.about?.genres     || "Calidad",      desc:t.about?.p2 || "Cada release pasa por un proceso de selección riguroso. Solo publicamos lo que nos mueve de verdad." },
-    { n:"03", title:t.about?.distro     || "Distribución", desc:t.about?.p3 || "Presencia en todas las plataformas principales. Tu música donde está tu audiencia." },
-    { n:"04", title:t.about?.eyebrow    || "Transparencia",desc:t.about?.quote || "Regalías claras, pagos puntuales y acceso total a tus datos desde tu panel de artista." },
+    { n:"01", title:t.about?.value1Title||"Comunidad",    desc:t.about?.value1Desc||"Un sello construido sobre relaciones reales entre artistas, oyentes y creadores de contenido." },
+    { n:"02", title:t.about?.value2Title||"Calidad",      desc:t.about?.value2Desc||"Cada release pasa por un proceso de selección riguroso. Solo publicamos lo que nos mueve de verdad." },
+    { n:"03", title:t.about?.value3Title||"Distribución", desc:t.about?.value3Desc||"Presencia en todas las plataformas principales. Tu música donde está tu audiencia." },
+    { n:"04", title:t.about?.value4Title||"Transparencia",desc:t.about?.value4Desc||"Regalías claras, pagos puntuales y acceso total a tus datos desde tu panel de artista." },
   ];
+
+  const titleLines = (t.about?.title || "MÚSICA SIN\nFRONTERAS").split("\n");
 
   /* ── MÓVIL ── */
   if (isMobile) return (
@@ -68,10 +70,10 @@ export default function About() {
           <h2 style={{ fontFamily:"var(--font-display)",
             fontSize:"clamp(36px,10vw,56px)", lineHeight:0.9,
             letterSpacing:"-0.5px", color:"var(--white)" }}>
-            {t.about?.title?.split("\n")[0] || "MÚSICA SIN"}<br />
+            {titleLines[0]}<br />
             <span style={{ color:"transparent",
               WebkitTextStroke:"1.5px rgba(240,240,240,0.15)" }}>
-              {t.about?.title?.split("\n")[1] || "FRONTERAS"}
+              {titleLines[1]}
             </span>
           </h2>
         </div>
@@ -143,10 +145,10 @@ export default function About() {
             <h2 style={{ fontFamily:"var(--font-display)",
               fontSize:"clamp(56px,8vw,110px)", lineHeight:0.88,
               letterSpacing:"-1px", color:"var(--white)" }}>
-              {t.about?.title?.split("\n")[0] || "MÚSICA SIN"}<br />
+              {titleLines[0]}<br />
               <span style={{ color:"transparent",
                 WebkitTextStroke:"2px rgba(240,240,240,0.15)" }}>
-                {t.about?.title?.split("\n")[1] || "FRONTERAS"}
+                {titleLines[1]}
               </span>
             </h2>
           </div>
@@ -178,7 +180,6 @@ export default function About() {
             ))}
           </div>
         </motion.div>
-
         <div>
           {values.map((v,i) => (
             <motion.div key={v.n} initial={{ opacity:0, x:30 }} whileInView={{ opacity:1, x:0 }}
