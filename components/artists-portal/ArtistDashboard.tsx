@@ -16,38 +16,128 @@ type Track = {
   revenue: number; store: string; month: string;
 };
 
-// ─── Colores estilo Stripe ───
 const c = {
-  bg:          "#f9fafb",
-  white:       "#ffffff",
-  border:      "#e5e7eb",
-  borderLight: "#f3f4f6",
-  text:        "#111827",
-  textSub:     "#6b7280",
-  textMute:    "#9ca3af",
-  accent:      "#111827",
-  green:       "#16a34a",
-  greenBg:     "#f0fdf4",
-  greenBorder: "#bbf7d0",
-  blue:        "#2563eb",
-  blueBg:      "#eff6ff",
-  blueBorder:  "#bfdbfe",
-  red:         "#dc2626",
-  redBg:       "#fef2f2",
-  redBorder:   "#fecaca",
-  yellow:      "#d97706",
-  yellowBg:    "#fffbeb",
-  yellowBorder:"#fde68a",
-  purple:      "#7c3aed",
+  bg:"#f9fafb", white:"#ffffff", border:"#e5e7eb", borderLight:"#f3f4f6",
+  text:"#111827", textSub:"#6b7280", textMute:"#9ca3af", accent:"#111827",
+  green:"#16a34a", greenBg:"#f0fdf4", greenBorder:"#bbf7d0",
+  blue:"#2563eb", blueBg:"#eff6ff", blueBorder:"#bfdbfe",
+  red:"#dc2626", redBg:"#fef2f2", redBorder:"#fecaca",
+  yellow:"#d97706", yellowBg:"#fffbeb", yellowBorder:"#fde68a",
+  purple:"#7c3aed",
 };
 
 const CHART_COLORS = [c.blue, c.green, c.purple, "#f59e0b", "#ef4444", "#06b6d4", "#84cc16", "#f97316"];
 
+type Lang = "es" | "en";
+
+const i18n = {
+  es: {
+    portal: "Portal de artistas", welcome: "Bienvenido de nuevo",
+    months: "meses de datos", month1: "mes de datos",
+    logout: "Cerrar sesión",
+    kpi1: "Streams totales", kpi1sub: "Acumulado",
+    kpi2: "Ingresos totales", kpi2sub: "Tu parte",
+    kpi3: "Ya cobrado", kpi3sub: "Pagado",
+    kpi4: "Pendiente de cobro", kpi4sub: "Acumulando",
+    tabOverview: "Resumen", tabMonthly: "Por mes", tabTracks: "Tracks", tabPayments: "Pagos", tabFaq: "FAQ",
+    streamEvolution: "Evolución de streams", revenueByMonth: "Ingresos por mes (USD)",
+    topTracks: "Top tracks", byPlatform: "Por plataforma",
+    noData: "Sin datos", noDataFilter: "Sin datos para este filtro",
+    clickTracks: "Ver tracks de este mes →",
+    allMonths: "Todos", allPlatforms: "Todas las plataformas",
+    showBreakdown: "Ver desglose →", hideBreakdown: "Ocultar ←",
+    breakdown: "Desglose por plataforma", totalStreams: "Total streams", totalRevenue: "Total ingresos",
+    platformNote: "El ingreso por stream varía según la plataforma. YouTube Premium y Spotify pagan más que TikTok o plataformas ad-supported.",
+    paymentsTitle: "Historial mes a mes",
+    kpiEarned: "Total generado", kpiPaid: "Total cobrado", kpiPending: "Pendiente de pago",
+    nextPayment: "Próximo pago", progress: "Progreso hacia el mínimo de $50.00",
+    readyLabel: "✓ Listo para cobrar", accumulatingLabel: "Acumulando",
+    readyMsg: (label: string) => `✓ Superas el mínimo — recibirás el pago en ${label}`,
+    pendingMsg: (amt: string) => `Faltan ${amt} para el mínimo. Tu saldo se acumulará al siguiente trimestre.`,
+    policy: "Pagos trimestrales — enero, abril, julio y octubre. Mínimo por pago: $50.00. El saldo se acumula si no llegas al mínimo. Para cualquier duda:",
+    historyMes: "Mes", historyStreams: "Streams", historyShare: "Tu parte", historyStatus: "Estado", historyDate: "Fecha de pago",
+    paid: "✓ Pagado", accumulating: "Acumulando",
+    faqTitle: "Preguntas frecuentes",
+    faqs: [
+      {
+        q: "¿Por qué no se ven reflejadas las estadísticas del último mes de Spotify si he tenido reproducciones?",
+        a: "Spotify reporta las estadísticas con un retraso de aproximadamente 2 meses. Esto significa que las reproducciones de, por ejemplo, junio aparecerán reflejadas en tu dashboard durante agosto. Es completamente normal y aplica a todas las plataformas de distribución.",
+      },
+      {
+        q: "¿Cuándo recibiré mi pago?",
+        a: "Los pagos se realizan trimestralmente: enero, abril, julio y octubre. Es necesario acumular un mínimo de $50.00 para recibir el pago. Si no llegas al mínimo, el saldo se acumula para el siguiente trimestre.",
+      },
+      {
+        q: "¿Por qué los ingresos son tan bajos si tengo muchas reproducciones?",
+        a: "El ingreso por stream varía mucho según la plataforma. Spotify paga entre $0.003 y $0.005 por stream, YouTube entre $0.001 y $0.003, y TikTok aún menos. Son cifras del sector, no exclusivas de LoyalFox Records.",
+      },
+      {
+        q: "¿Qué es el 'ingreso bruto' y cuál es mi parte?",
+        a: "El ingreso bruto es el total que genera tu música en todas las plataformas. Tu parte es el porcentaje acordado contigo (normalmente 60%). Ese porcentaje ya está calculado y mostrado en tu dashboard.",
+      },
+      {
+        q: "¿Cómo actualizo mi método de pago?",
+        a: "Escríbenos a info@loyalfoxrecords.com con tu nombre artístico y el nuevo método de pago (PayPal o IBAN). Actualizaremos los datos antes del siguiente ciclo de pagos.",
+      },
+    ],
+  },
+  en: {
+    portal: "Artist portal", welcome: "Welcome back",
+    months: "months of data", month1: "month of data",
+    logout: "Log out",
+    kpi1: "Total streams", kpi1sub: "Accumulated",
+    kpi2: "Total earnings", kpi2sub: "Your share",
+    kpi3: "Already paid", kpi3sub: "Transferred",
+    kpi4: "Pending payment", kpi4sub: "Accumulating",
+    tabOverview: "Overview", tabMonthly: "By month", tabTracks: "Tracks", tabPayments: "Payments", tabFaq: "FAQ",
+    streamEvolution: "Stream evolution", revenueByMonth: "Revenue by month (USD)",
+    topTracks: "Top tracks", byPlatform: "By platform",
+    noData: "No data yet", noDataFilter: "No data for this filter",
+    clickTracks: "View tracks for this month →",
+    allMonths: "All", allPlatforms: "All platforms",
+    showBreakdown: "View breakdown →", hideBreakdown: "Hide ←",
+    breakdown: "Platform breakdown", totalStreams: "Total streams", totalRevenue: "Total revenue",
+    platformNote: "Revenue per stream varies by platform. YouTube Premium and Spotify pay more than TikTok or ad-supported platforms.",
+    paymentsTitle: "Month by month history",
+    kpiEarned: "Total generated", kpiPaid: "Total paid", kpiPending: "Pending payment",
+    nextPayment: "Next payment", progress: "Progress towards $50.00 minimum",
+    readyLabel: "✓ Ready to collect", accumulatingLabel: "Accumulating",
+    readyMsg: (label: string) => `✓ You've reached the minimum — you'll receive payment in ${label}`,
+    pendingMsg: (amt: string) => `${amt} remaining to reach the minimum. Your balance will roll over to the next quarter.`,
+    policy: "Quarterly payments — January, April, July and October. Minimum per payment: $50.00. Balance accumulates if you don't reach the minimum. For any questions:",
+    historyMes: "Month", historyStreams: "Streams", historyShare: "Your share", historyStatus: "Status", historyDate: "Payment date",
+    paid: "✓ Paid", accumulating: "Accumulating",
+    faqTitle: "Frequently asked questions",
+    faqs: [
+      {
+        q: "Why don't the latest month's Spotify stats show up even though I've had streams?",
+        a: "Spotify reports statistics with approximately a 2-month delay. This means streams from, for example, June will appear in your dashboard during August. This is completely normal and applies to all distribution platforms.",
+      },
+      {
+        q: "When will I receive my payment?",
+        a: "Payments are made quarterly: January, April, July and October. You need to accumulate a minimum of $50.00 to receive payment. If you don't reach the minimum, the balance rolls over to the next quarter.",
+      },
+      {
+        q: "Why are my earnings low even though I have many streams?",
+        a: "Revenue per stream varies greatly by platform. Spotify pays between $0.003 and $0.005 per stream, YouTube between $0.001 and $0.003, and TikTok even less. These are industry-wide figures, not specific to LoyalFox Records.",
+      },
+      {
+        q: "What is 'gross revenue' and what is my share?",
+        a: "Gross revenue is the total your music generates across all platforms. Your share is the agreed percentage (usually 60%). That percentage is already calculated and shown in your dashboard.",
+      },
+      {
+        q: "How do I update my payment method?",
+        a: "Email us at info@loyalfoxrecords.com with your artist name and new payment method (PayPal or IBAN). We'll update your details before the next payment cycle.",
+      },
+    ],
+  },
+};
+
 const fmt          = (n: number) => n >= 1000000 ? `${(n/1000000).toFixed(1)}M` : n >= 1000 ? `${(n/1000).toFixed(1)}K` : String(n);
 const fmtUSD       = (n: number) => `$${Number(n).toFixed(4)}`;
 const fmtUSD2      = (n: number) => `$${Number(n).toFixed(2)}`;
-const fmtMonth     = (m: string) => { try { const d = new Date(m+"-02"); return d.toLocaleString("es",{month:"short",year:"numeric"}); } catch { return m; } };
-const fmtMonthFull = (m: string) => { try { const d = new Date(m+"-02"); return d.toLocaleString("es",{month:"long",year:"numeric"}); } catch { return m; } };
+const fmtMonth     = (m: string, lang: Lang) => { try { const d = new Date(m+"-02"); return d.toLocaleString(lang==="en"?"en":"es",{month:"short",year:"numeric"}); } catch { return m; } };
+const fmtMonthFull = (m: string, lang: Lang) => { try { const d = new Date(m+"-02"); return d.toLocaleString(lang==="en"?"en":"es",{month:"long",year:"numeric"}); } catch { return m; } };
 
 const base: React.CSSProperties = { fontFamily:"system-ui, -apple-system, sans-serif" };
 
@@ -68,15 +158,20 @@ const ChartTooltip = ({ active, payload, label }: any) => {
 
 export default function ArtistDashboard() {
   const router = useRouter();
+  const [lang, setLang] = useState<Lang>("en");
   const [name, setName]               = useState("");
   const [artistName, setArtistName]   = useState("");
   const [royalties, setRoyalties]     = useState<Royalty[]>([]);
   const [tracks, setTracks]           = useState<Track[]>([]);
   const [loading, setLoading]         = useState(true);
-  const [activeTab, setActiveTab]     = useState<"overview"|"monthly"|"tracks"|"payments">("overview");
+  const [activeTab, setActiveTab]     = useState<"overview"|"monthly"|"tracks"|"payments"|"faq">("overview");
   const [activeMonth, setActiveMonth] = useState<string|null>(null);
   const [activeStore, setActiveStore] = useState<string|null>(null);
   const [selectedTrack, setSelectedTrack] = useState<string|null>(null);
+  const [openFaq, setOpenFaq]         = useState<number|null>(null);
+
+  const t = i18n[lang];
+  const THRESHOLD = 50;
 
   useEffect(() => {
     fetch("/api/artists-portal/me")
@@ -100,8 +195,8 @@ export default function ArtistDashboard() {
   const totalPending  = royalties.filter(r=>!r.paid).reduce((a,r) => a + Number(r.artist_share), 0);
 
   const monthlyChart = [...royalties].reverse().map(r => ({
-    month:   r.month.slice(0,7),
-    label:   fmtMonth(r.month.slice(0,7)),
+    month: r.month.slice(0,7),
+    label: fmtMonth(r.month.slice(0,7), lang),
     streams: r.total_streams,
     revenue: Number(r.artist_share),
   }));
@@ -109,58 +204,55 @@ export default function ArtistDashboard() {
   const filteredTracks = activeMonth ? tracks.filter(t => t.month === activeMonth) : tracks;
 
   const topTracks = Object.values(
-    filteredTracks.reduce((acc: Record<string,any>, t) => {
-      if (!acc[t.track_name]) acc[t.track_name] = { name:t.track_name, streams:0, revenue:0 };
-      acc[t.track_name].streams += t.streams;
-      acc[t.track_name].revenue += t.revenue;
+    filteredTracks.reduce((acc: Record<string,any>, tr) => {
+      if (!acc[tr.track_name]) acc[tr.track_name] = { name:tr.track_name, streams:0, revenue:0 };
+      acc[tr.track_name].streams += tr.streams;
+      acc[tr.track_name].revenue += tr.revenue;
       return acc;
     }, {})
   ).sort((a:any,b:any) => b.streams - a.streams) as any[];
 
   const byStore = Object.values(
-    filteredTracks.reduce((acc: Record<string,any>, t) => {
-      if (!acc[t.store]) acc[t.store] = { name:t.store, streams:0, revenue:0 };
-      acc[t.store].streams += t.streams;
-      acc[t.store].revenue += t.revenue;
+    filteredTracks.reduce((acc: Record<string,any>, tr) => {
+      if (!acc[tr.store]) acc[tr.store] = { name:tr.store, streams:0, revenue:0 };
+      acc[tr.store].streams += tr.streams;
+      acc[tr.store].revenue += tr.revenue;
       return acc;
     }, {})
   ).sort((a:any,b:any) => b.streams - a.streams) as any[];
 
   const storeFilteredTracks = activeStore
     ? Object.values(
-        filteredTracks
-          .filter(t => t.store === activeStore)
-          .reduce((acc: Record<string,any>, t) => {
-            if (!acc[t.track_name]) acc[t.track_name] = { name:t.track_name, streams:0, revenue:0 };
-            acc[t.track_name].streams += t.streams;
-            acc[t.track_name].revenue += t.revenue;
+        filteredTracks.filter(tr => tr.store === activeStore)
+          .reduce((acc: Record<string,any>, tr) => {
+            if (!acc[tr.track_name]) acc[tr.track_name] = { name:tr.track_name, streams:0, revenue:0 };
+            acc[tr.track_name].streams += tr.streams;
+            acc[tr.track_name].revenue += tr.revenue;
             return acc;
           }, {})
       ).sort((a:any,b:any) => b.streams - a.streams) as any[]
     : topTracks;
 
-  const allStores = Array.from(new Set(filteredTracks.map(t => t.store).filter(Boolean)));
+  const allStores = Array.from(new Set(filteredTracks.map(tr => tr.store).filter(Boolean)));
 
   const trackStoreBreakdown = selectedTrack
     ? Object.values(
-        filteredTracks
-          .filter(t => t.track_name === selectedTrack)
-          .reduce((acc: Record<string,any>, t) => {
-            if (!acc[t.store]) acc[t.store] = { store:t.store, streams:0, revenue:0 };
-            acc[t.store].streams += t.streams;
-            acc[t.store].revenue += t.revenue;
+        filteredTracks.filter(tr => tr.track_name === selectedTrack)
+          .reduce((acc: Record<string,any>, tr) => {
+            if (!acc[tr.store]) acc[tr.store] = { store:tr.store, streams:0, revenue:0 };
+            acc[tr.store].streams += tr.streams;
+            acc[tr.store].revenue += tr.revenue;
             return acc;
           }, {})
       ).sort((a:any,b:any) => b.streams - a.streams) as any[]
     : [];
 
-  const threshold   = 20;
   const now         = new Date();
-  const nextMonth   = [0,3,6,9].find(m => m > now.getMonth()) ?? 0;
-  const nextYear    = nextMonth === 0 ? now.getFullYear()+1 : now.getFullYear();
-  const nextLabel   = new Date(nextYear, nextMonth, 1).toLocaleString("es",{month:"long",year:"numeric"});
-  const canReceive  = totalPending >= threshold;
-  const progressPct = Math.max(Math.min((totalPending/threshold)*100, 100), 3);
+  const nextMonthIdx = [0,3,6,9].find(m => m > now.getMonth()) ?? 0;
+  const nextYear    = nextMonthIdx === 0 ? now.getFullYear()+1 : now.getFullYear();
+  const nextLabel   = new Date(nextYear, nextMonthIdx, 1).toLocaleString(lang==="en"?"en":"es",{month:"long",year:"numeric"});
+  const canReceive  = totalPending >= THRESHOLD;
+  const progressPct = Math.max(Math.min((totalPending/THRESHOLD)*100, 100), 3);
 
   if (loading) return (
     <div style={{ minHeight:"100vh", display:"flex", alignItems:"center",
@@ -169,32 +261,18 @@ export default function ArtistDashboard() {
         <div style={{ width:"36px", height:"36px", borderRadius:"50%",
           border:`2px solid ${c.border}`, borderTopColor:c.text,
           margin:"0 auto 12px", animation:"spin 0.8s linear infinite" }} />
-        <p style={{ ...base, fontSize:"13px", color:c.textMute }}>Cargando...</p>
+        <p style={{ ...base, fontSize:"13px", color:c.textMute }}>Loading...</p>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 
-  // ─── Estilos reutilizables ───
-  const card: React.CSSProperties = {
-    background:c.white, border:`1px solid ${c.border}`,
-    borderRadius:"8px", overflow:"hidden",
-  };
-  const cardHeader: React.CSSProperties = {
-    padding:"14px 20px", borderBottom:`1px solid ${c.border}`,
-    display:"flex", alignItems:"center", justifyContent:"space-between",
-  };
-  const cardTitle: React.CSSProperties = {
-    ...base, fontSize:"13px", fontWeight:600, color:c.text,
-  };
-  const label: React.CSSProperties = {
-    ...base, fontSize:"11px", fontWeight:500, color:c.textMute,
-    textTransform:"uppercase", letterSpacing:"0.04em",
-  };
-
+  const card: React.CSSProperties = { background:c.white, border:`1px solid ${c.border}`, borderRadius:"8px", overflow:"hidden" };
+  const cardHeader: React.CSSProperties = { padding:"14px 20px", borderBottom:`1px solid ${c.border}`, display:"flex", alignItems:"center", justifyContent:"space-between" };
+  const cardTitle: React.CSSProperties = { ...base, fontSize:"13px", fontWeight:600, color:c.text };
+  const lbl: React.CSSProperties = { ...base, fontSize:"11px", fontWeight:500, color:c.textMute, textTransform:"uppercase", letterSpacing:"0.04em" };
   const badge = (paid: boolean): React.CSSProperties => ({
-    ...base, display:"inline-flex", alignItems:"center",
-    padding:"2px 8px", borderRadius:"9999px",
+    ...base, display:"inline-flex", alignItems:"center", padding:"2px 8px", borderRadius:"9999px",
     fontSize:"11px", fontWeight:500,
     color: paid ? c.green : c.yellow,
     background: paid ? c.greenBg : c.yellowBg,
@@ -204,7 +282,7 @@ export default function ArtistDashboard() {
   return (
     <div style={{ minHeight:"100vh", background:c.bg, color:c.text }}>
 
-      {/* ─── NAV ─── */}
+      {/* NAV */}
       <nav style={{ height:"60px", display:"flex", alignItems:"center",
         justifyContent:"space-between", padding:"0 32px",
         background:c.white, borderBottom:`1px solid ${c.border}`,
@@ -214,11 +292,22 @@ export default function ArtistDashboard() {
             LoyalFox Records
           </span>
           <span style={{ width:"1px", height:"16px", background:c.border }} />
-          <span style={{ ...base, fontSize:"12px", color:c.textMute }}>
-            Portal de artistas
-          </span>
+          <span style={{ ...base, fontSize:"12px", color:c.textMute }}>{t.portal}</span>
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:"16px" }}>
+          {/* Lang toggle */}
+          <div style={{ display:"flex", gap:"2px", background:c.bg, borderRadius:"6px", padding:"2px", border:`1px solid ${c.border}` }}>
+            {(["en","es"] as Lang[]).map(l => (
+              <button key={l} onClick={() => setLang(l)}
+                style={{ ...base, padding:"4px 10px", borderRadius:"4px", fontSize:"12px",
+                  fontWeight:500, border:"none", cursor:"pointer",
+                  background: lang===l ? c.white : "transparent",
+                  color: lang===l ? c.text : c.textMute,
+                  boxShadow: lang===l ? "0 1px 3px rgba(0,0,0,0.08)" : "none" }}>
+                {l.toUpperCase()}
+              </button>
+            ))}
+          </div>
           <div style={{ textAlign:"right" }}>
             <p style={{ ...base, fontSize:"13px", fontWeight:600, color:c.text }}>{artistName}</p>
             <p style={{ ...base, fontSize:"11px", color:c.textMute }}>{name}</p>
@@ -226,57 +315,51 @@ export default function ArtistDashboard() {
           <button onClick={logout}
             style={{ ...base, padding:"6px 14px", borderRadius:"6px",
               border:`1px solid ${c.border}`, background:c.white,
-              fontSize:"13px", color:c.textSub, cursor:"pointer",
-              transition:"all .15s" }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = c.red; (e.currentTarget as HTMLElement).style.color = c.red; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = c.border; (e.currentTarget as HTMLElement).style.color = c.textSub; }}>
-            Cerrar sesión
+              fontSize:"13px", color:c.textSub, cursor:"pointer", transition:"all .15s" }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor=c.red; (e.currentTarget as HTMLElement).style.color=c.red; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor=c.border; (e.currentTarget as HTMLElement).style.color=c.textSub; }}>
+            {t.logout}
           </button>
         </div>
       </nav>
 
       <div style={{ maxWidth:"1200px", margin:"0 auto", padding:"32px 24px" }}>
 
-        {/* ─── HEADER ─── */}
+        {/* HEADER */}
         <div style={{ marginBottom:"32px" }}>
-          <p style={{ ...base, fontSize:"13px", color:c.textMute, marginBottom:"4px" }}>
-            Bienvenido de nuevo
-          </p>
-          <h1 style={{ ...base, fontSize:"28px", fontWeight:700, color:c.text,
-            letterSpacing:"-0.5px", marginBottom:"4px" }}>
+          <p style={{ ...base, fontSize:"13px", color:c.textMute, marginBottom:"4px" }}>{t.welcome}</p>
+          <h1 style={{ ...base, fontSize:"28px", fontWeight:700, color:c.text, letterSpacing:"-0.5px", marginBottom:"4px" }}>
             {artistName}
           </h1>
           <p style={{ ...base, fontSize:"13px", color:c.textMute }}>
-            LoyalFox Records · {royalties.length} {royalties.length===1?"mes":"meses"} de datos
+            LoyalFox Records · {royalties.length} {royalties.length===1?t.month1:t.months}
           </p>
         </div>
 
-        {/* ─── KPIs ─── */}
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)",
-          gap:"16px", marginBottom:"32px" }}>
+        {/* KPIs */}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"16px", marginBottom:"32px" }}>
           {[
-            { label:"Streams totales",    value:fmt(totalStreams),    sub:"Acumulado", color:c.text, bg:c.white },
-            { label:"Ingresos totales",   value:fmtUSD2(totalEarned), sub:"Tu parte",  color:c.blue, bg:c.blueBg },
-            { label:"Ya cobrado",         value:fmtUSD2(totalPaid),   sub:"Pagado",    color:c.green,bg:c.greenBg },
-            { label:"Pendiente de cobro", value:fmtUSD2(totalPending),sub:"Acumulando",color:canReceive?c.green:c.yellow, bg:canReceive?c.greenBg:c.yellowBg },
+            { label:t.kpi1, value:fmt(totalStreams),     sub:t.kpi1sub, color:c.text  },
+            { label:t.kpi2, value:fmtUSD2(totalEarned),  sub:t.kpi2sub, color:c.blue  },
+            { label:t.kpi3, value:fmtUSD2(totalPaid),    sub:t.kpi3sub, color:c.green },
+            { label:t.kpi4, value:fmtUSD2(totalPending), sub:t.kpi4sub, color:canReceive?c.green:c.yellow },
           ].map((k,i) => (
             <div key={i} style={{ ...card, padding:"20px 24px" }}>
-              <p style={label}>{k.label}</p>
-              <p style={{ ...base, fontSize:"28px", fontWeight:700,
-                color:k.color, lineHeight:1, margin:"8px 0 4px" }}>{k.value}</p>
+              <p style={lbl}>{k.label}</p>
+              <p style={{ ...base, fontSize:"28px", fontWeight:700, color:k.color, lineHeight:1, margin:"8px 0 4px" }}>{k.value}</p>
               <p style={{ ...base, fontSize:"12px", color:c.textMute }}>{k.sub}</p>
             </div>
           ))}
         </div>
 
-        {/* ─── TABS ─── */}
-        <div style={{ display:"flex", gap:"4px", marginBottom:"24px",
-          borderBottom:`1px solid ${c.border}`, paddingBottom:"0" }}>
+        {/* TABS */}
+        <div style={{ display:"flex", gap:"4px", marginBottom:"24px", borderBottom:`1px solid ${c.border}` }}>
           {([
-            { id:"overview", label:"Resumen"  },
-            { id:"monthly",  label:"Por mes"  },
-            { id:"tracks",   label:"Tracks"   },
-            { id:"payments", label:"Pagos"    },
+            { id:"overview", label:t.tabOverview },
+            { id:"monthly",  label:t.tabMonthly  },
+            { id:"tracks",   label:t.tabTracks   },
+            { id:"payments", label:t.tabPayments },
+            { id:"faq",      label:t.tabFaq      },
           ] as const).map((tab) => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               style={{ ...base, padding:"10px 20px", fontSize:"13px", fontWeight:500,
@@ -289,20 +372,18 @@ export default function ArtistDashboard() {
           ))}
         </div>
 
-        {/* ─── OVERVIEW ─── */}
+        {/* OVERVIEW */}
         {activeTab==="overview" && (
           <div style={{ display:"flex", flexDirection:"column", gap:"20px" }}>
             {monthlyChart.length > 0 && (
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"16px" }}>
                 <div style={card}>
-                  <div style={cardHeader}>
-                    <p style={cardTitle}>Evolución de streams</p>
-                  </div>
+                  <div style={cardHeader}><p style={cardTitle}>{t.streamEvolution}</p></div>
                   <div style={{ padding:"20px" }}>
                     <ResponsiveContainer width="100%" height={200}>
                       <AreaChart data={monthlyChart}>
                         <defs>
-                          <linearGradient id="streamGrad" x1="0" y1="0" x2="0" y2="1">
+                          <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%"  stopColor={c.blue} stopOpacity={0.15}/>
                             <stop offset="95%" stopColor={c.blue} stopOpacity={0}/>
                           </linearGradient>
@@ -310,21 +391,18 @@ export default function ArtistDashboard() {
                         <XAxis dataKey="label" tick={{ fontFamily:"system-ui", fontSize:11, fill:c.textMute }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fontFamily:"system-ui", fontSize:11, fill:c.textMute }} tickFormatter={fmt} axisLine={false} tickLine={false} />
                         <Tooltip content={<ChartTooltip />} />
-                        <Area type="monotone" dataKey="streams" stroke={c.blue}
-                          strokeWidth={2} fill="url(#streamGrad)" name="Streams" />
+                        <Area type="monotone" dataKey="streams" stroke={c.blue} strokeWidth={2} fill="url(#sg)" name="Streams" />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
                 <div style={card}>
-                  <div style={cardHeader}>
-                    <p style={cardTitle}>Ingresos por mes (USD)</p>
-                  </div>
+                  <div style={cardHeader}><p style={cardTitle}>{t.revenueByMonth}</p></div>
                   <div style={{ padding:"20px" }}>
                     <ResponsiveContainer width="100%" height={200}>
                       <AreaChart data={monthlyChart}>
                         <defs>
-                          <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                          <linearGradient id="rg" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%"  stopColor={c.green} stopOpacity={0.15}/>
                             <stop offset="95%" stopColor={c.green} stopOpacity={0}/>
                           </linearGradient>
@@ -332,66 +410,47 @@ export default function ArtistDashboard() {
                         <XAxis dataKey="label" tick={{ fontFamily:"system-ui", fontSize:11, fill:c.textMute }} axisLine={false} tickLine={false} />
                         <YAxis tick={{ fontFamily:"system-ui", fontSize:11, fill:c.textMute }} axisLine={false} tickLine={false} />
                         <Tooltip content={<ChartTooltip />} />
-                        <Area type="monotone" dataKey="revenue" stroke={c.green}
-                          strokeWidth={2} fill="url(#revGrad)" name="Ingresos $" />
+                        <Area type="monotone" dataKey="revenue" stroke={c.green} strokeWidth={2} fill="url(#rg)" name={lang==="en"?"Revenue $":"Ingresos $"} />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
               </div>
             )}
-
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"16px" }}>
-              {/* Top tracks */}
               <div style={card}>
-                <div style={cardHeader}>
-                  <p style={cardTitle}>Top tracks</p>
-                </div>
-                <div style={{ padding:"0" }}>
+                <div style={cardHeader}><p style={cardTitle}>{t.topTracks}</p></div>
+                <div>
                   {topTracks.slice(0,5).map((tr,i) => (
-                    <div key={tr.name} style={{ display:"flex", alignItems:"center",
-                      gap:"12px", padding:"12px 20px",
-                      borderBottom: i<4 ? `1px solid ${c.borderLight}` : "none" }}>
-                      <span style={{ ...base, fontSize:"12px", color:c.textMute, minWidth:"20px", fontWeight:500 }}>
-                        {i+1}
-                      </span>
+                    <div key={tr.name} style={{ display:"flex", alignItems:"center", gap:"12px",
+                      padding:"12px 20px", borderBottom:i<4?`1px solid ${c.borderLight}`:"none" }}>
+                      <span style={{ ...base, fontSize:"12px", color:c.textMute, minWidth:"20px", fontWeight:500 }}>{i+1}</span>
                       <span style={{ ...base, fontSize:"13px", color:c.text, flex:1,
-                        overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", fontWeight:500 }}>
-                        {tr.name}
-                      </span>
+                        overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", fontWeight:500 }}>{tr.name}</span>
                       <div style={{ width:"60px", height:"4px", background:c.borderLight, borderRadius:"2px" }}>
                         <div style={{ height:"100%", background:c.blue, borderRadius:"2px",
                           width:`${(tr.streams/topTracks[0]?.streams)*100}%` }} />
                       </div>
-                      <span style={{ ...base, fontSize:"12px", color:c.blue,
-                        fontWeight:600, minWidth:"40px", textAlign:"right" }}>
+                      <span style={{ ...base, fontSize:"12px", color:c.blue, fontWeight:600, minWidth:"40px", textAlign:"right" }}>
                         {fmt(tr.streams)}
                       </span>
                     </div>
                   ))}
                   {topTracks.length===0 && (
-                    <p style={{ ...base, fontSize:"13px", color:c.textMute,
-                      padding:"32px", textAlign:"center" }}>Sin datos</p>
+                    <p style={{ ...base, fontSize:"13px", color:c.textMute, padding:"32px", textAlign:"center" }}>{t.noData}</p>
                   )}
                 </div>
               </div>
-
-              {/* Por plataforma */}
               <div style={card}>
-                <div style={cardHeader}>
-                  <p style={cardTitle}>Por plataforma</p>
-                </div>
+                <div style={cardHeader}><p style={cardTitle}>{t.byPlatform}</p></div>
                 <div style={{ padding:"20px" }}>
                   <ResponsiveContainer width="100%" height={200}>
                     <BarChart data={byStore.slice(0,6)} layout="vertical">
                       <XAxis type="number" tick={{ fontFamily:"system-ui", fontSize:11, fill:c.textMute }} tickFormatter={fmt} axisLine={false} tickLine={false} />
-                      <YAxis type="category" dataKey="name" width={90}
-                        tick={{ fontFamily:"system-ui", fontSize:11, fill:c.textSub }} axisLine={false} tickLine={false} />
+                      <YAxis type="category" dataKey="name" width={90} tick={{ fontFamily:"system-ui", fontSize:11, fill:c.textSub }} axisLine={false} tickLine={false} />
                       <Tooltip content={<ChartTooltip />} />
                       <Bar dataKey="streams" name="Streams" radius={[0,4,4,0]}>
-                        {byStore.slice(0,6).map((_,i) => (
-                          <Cell key={i} fill={CHART_COLORS[i%CHART_COLORS.length]} />
-                        ))}
+                        {byStore.slice(0,6).map((_,i) => <Cell key={i} fill={CHART_COLORS[i%CHART_COLORS.length]} />)}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
@@ -401,114 +460,93 @@ export default function ArtistDashboard() {
           </div>
         )}
 
-        {/* ─── MONTHLY ─── */}
+        {/* MONTHLY */}
         {activeTab==="monthly" && (
           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:"16px" }}>
             {royalties.map((r) => (
               <div key={r.id}
                 onClick={() => { setActiveMonth(activeMonth===r.month?null:r.month); setActiveStore(null); setSelectedTrack(null); setActiveTab("tracks"); }}
                 style={{ ...card, padding:"20px", cursor:"pointer", transition:"box-shadow .15s" }}
-                onMouseEnter={e => (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)"}
-                onMouseLeave={e => (e.currentTarget as HTMLElement).style.boxShadow = "none"}>
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.boxShadow="0 4px 12px rgba(0,0,0,0.08)"}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.boxShadow="none"}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"16px" }}>
                   <p style={{ ...base, fontSize:"15px", fontWeight:600, color:c.text, textTransform:"capitalize" }}>
-                    {fmtMonthFull(r.month.slice(0,7))}
+                    {fmtMonthFull(r.month.slice(0,7), lang)}
                   </p>
-                  <span style={badge(r.paid)}>{r.paid?"✓ Pagado":"Acumulando"}</span>
+                  <span style={badge(r.paid)}>{r.paid?t.paid:t.accumulating}</span>
                 </div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"12px" }}>
                   <div>
-                    <p style={label}>Streams</p>
-                    <p style={{ ...base, fontSize:"22px", fontWeight:700, color:c.text, lineHeight:1, marginTop:"4px" }}>
-                      {fmt(r.total_streams)}
-                    </p>
+                    <p style={lbl}>Streams</p>
+                    <p style={{ ...base, fontSize:"22px", fontWeight:700, color:c.text, lineHeight:1, marginTop:"4px" }}>{fmt(r.total_streams)}</p>
                   </div>
                   <div>
-                    <p style={label}>Tu parte</p>
-                    <p style={{ ...base, fontSize:"22px", fontWeight:700, color:c.green, lineHeight:1, marginTop:"4px" }}>
-                      {fmtUSD(r.artist_share)}
-                    </p>
+                    <p style={lbl}>{lang==="en"?"Your share":"Tu parte"}</p>
+                    <p style={{ ...base, fontSize:"22px", fontWeight:700, color:c.green, lineHeight:1, marginTop:"4px" }}>{fmtUSD(r.artist_share)}</p>
                   </div>
                 </div>
-                <p style={{ ...base, fontSize:"12px", color:c.textMute, marginTop:"14px" }}>
-                  Ver tracks de este mes →
-                </p>
+                <p style={{ ...base, fontSize:"12px", color:c.textMute, marginTop:"14px" }}>{t.clickTracks}</p>
               </div>
             ))}
             {royalties.length===0 && (
-              <p style={{ ...base, fontSize:"13px", color:c.textMute, gridColumn:"1/-1", textAlign:"center", padding:"48px" }}>
-                Sin datos aún
-              </p>
+              <p style={{ ...base, fontSize:"13px", color:c.textMute, gridColumn:"1/-1", textAlign:"center", padding:"48px" }}>{t.noData}</p>
             )}
           </div>
         )}
 
-        {/* ─── TRACKS ─── */}
+        {/* TRACKS */}
         {activeTab==="tracks" && (
           <div style={{ display:"grid", gridTemplateColumns:selectedTrack?"1fr 320px":"1fr", gap:"16px" }}>
             <div>
-              {/* Filtros mes */}
               <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", marginBottom:"10px" }}>
                 <button onClick={() => { setActiveMonth(null); setActiveStore(null); setSelectedTrack(null); }}
-                  style={{ ...base, padding:"5px 12px", borderRadius:"6px", fontSize:"12px",
-                    fontWeight:500, cursor:"pointer", border:`1px solid ${c.border}`,
-                    background: !activeMonth ? c.text : c.white,
-                    color: !activeMonth ? c.white : c.textSub }}>
-                  Todos
+                  style={{ ...base, padding:"5px 12px", borderRadius:"6px", fontSize:"12px", fontWeight:500,
+                    cursor:"pointer", border:`1px solid ${c.border}`,
+                    background:!activeMonth?c.text:c.white, color:!activeMonth?c.white:c.textSub }}>
+                  {t.allMonths}
                 </button>
                 {royalties.map((r) => (
                   <button key={r.month}
                     onClick={() => { setActiveMonth(r.month); setActiveStore(null); setSelectedTrack(null); }}
-                    style={{ ...base, padding:"5px 12px", borderRadius:"6px", fontSize:"12px",
-                      fontWeight:500, cursor:"pointer", border:`1px solid ${c.border}`,
-                      background: activeMonth===r.month ? c.text : c.white,
-                      color: activeMonth===r.month ? c.white : c.textSub }}>
-                    {fmtMonth(r.month.slice(0,7))}
+                    style={{ ...base, padding:"5px 12px", borderRadius:"6px", fontSize:"12px", fontWeight:500,
+                      cursor:"pointer", border:`1px solid ${c.border}`,
+                      background:activeMonth===r.month?c.text:c.white, color:activeMonth===r.month?c.white:c.textSub }}>
+                    {fmtMonth(r.month.slice(0,7), lang)}
                   </button>
                 ))}
               </div>
-
-              {/* Filtros plataforma */}
               {allStores.length>0 && (
                 <div style={{ display:"flex", gap:"6px", flexWrap:"wrap", marginBottom:"16px" }}>
                   <button onClick={() => setActiveStore(null)}
                     style={{ ...base, padding:"4px 10px", borderRadius:"6px", fontSize:"11px",
                       cursor:"pointer", border:`1px solid ${c.border}`,
-                      background: !activeStore ? c.accent : c.white,
-                      color: !activeStore ? c.white : c.textSub }}>
-                    Todas las plataformas
+                      background:!activeStore?c.accent:c.white, color:!activeStore?c.white:c.textSub }}>
+                    {t.allPlatforms}
                   </button>
                   {allStores.map(store => (
                     <button key={store} onClick={() => setActiveStore(activeStore===store?null:store)}
                       style={{ ...base, padding:"4px 10px", borderRadius:"6px", fontSize:"11px",
                         cursor:"pointer", border:`1px solid ${c.border}`,
-                        background: activeStore===store ? c.accent : c.white,
-                        color: activeStore===store ? c.white : c.textSub }}>
+                        background:activeStore===store?c.accent:c.white, color:activeStore===store?c.white:c.textSub }}>
                       {store}
                     </button>
                   ))}
                 </div>
               )}
-
-              {/* Tabla */}
               <div style={card}>
                 <table style={{ width:"100%", borderCollapse:"collapse" }}>
                   <thead>
                     <tr style={{ background:c.bg }}>
-                      {["#","Track","Streams","Ingresos",""].map((h,i) => (
+                      {["#","Track","Streams",lang==="en"?"Revenue":"Ingresos",""].map((h,i) => (
                         <th key={i} style={{ ...base, padding:"10px 16px", textAlign:"left",
                           fontSize:"11px", fontWeight:500, color:c.textMute,
-                          borderBottom:`1px solid ${c.border}`, letterSpacing:"0.04em",
-                          textTransform:"uppercase" }}>{h}</th>
+                          borderBottom:`1px solid ${c.border}`, textTransform:"uppercase", letterSpacing:"0.04em" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {storeFilteredTracks.length===0 ? (
-                      <tr>
-                        <td colSpan={5} style={{ ...base, padding:"40px", textAlign:"center",
-                          fontSize:"13px", color:c.textMute }}>Sin datos para este filtro</td>
-                      </tr>
+                      <tr><td colSpan={5} style={{ ...base, padding:"40px", textAlign:"center", fontSize:"13px", color:c.textMute }}>{t.noDataFilter}</td></tr>
                     ) : storeFilteredTracks.map((tr: any, i: number) => (
                       <tr key={tr.name}
                         onClick={() => setSelectedTrack(selectedTrack===tr.name?null:tr.name)}
@@ -517,20 +555,14 @@ export default function ArtistDashboard() {
                         onMouseEnter={e => { if(selectedTrack!==tr.name)(e.currentTarget as HTMLElement).style.background=c.bg; }}
                         onMouseLeave={e => { if(selectedTrack!==tr.name)(e.currentTarget as HTMLElement).style.background=i%2===0?c.white:c.bg; }}>
                         <td style={{ ...base, padding:"12px 16px", fontSize:"12px", color:c.textMute }}>{i+1}</td>
-                        <td style={{ ...base, padding:"12px 16px", fontSize:"13px", fontWeight:500,
-                          color:selectedTrack===tr.name?c.blue:c.text }}>
+                        <td style={{ ...base, padding:"12px 16px", fontSize:"13px", fontWeight:500, color:selectedTrack===tr.name?c.blue:c.text }}>
                           {tr.name}
-                          <div style={{ width:`${(tr.streams/storeFilteredTracks[0]?.streams)*100}%`,
-                            height:"2px", background:c.blue, borderRadius:"1px", marginTop:"4px", opacity:0.3 }} />
+                          <div style={{ width:`${(tr.streams/storeFilteredTracks[0]?.streams)*100}%`, height:"2px", background:c.blue, borderRadius:"1px", marginTop:"4px", opacity:0.3 }} />
                         </td>
-                        <td style={{ ...base, padding:"12px 16px", fontSize:"13px", fontWeight:600, color:c.text }}>
-                          {fmt(tr.streams)}
-                        </td>
-                        <td style={{ ...base, padding:"12px 16px", fontSize:"13px", color:c.green, fontWeight:600 }}>
-                          {fmtUSD(tr.revenue)}
-                        </td>
+                        <td style={{ ...base, padding:"12px 16px", fontSize:"13px", fontWeight:600, color:c.text }}>{fmt(tr.streams)}</td>
+                        <td style={{ ...base, padding:"12px 16px", fontSize:"13px", color:c.green, fontWeight:600 }}>{fmtUSD(tr.revenue)}</td>
                         <td style={{ ...base, padding:"12px 16px", fontSize:"12px", color:c.blue }}>
-                          {selectedTrack===tr.name?"Ocultar ←":"Ver desglose →"}
+                          {selectedTrack===tr.name?t.hideBreakdown:t.showBreakdown}
                         </td>
                       </tr>
                     ))}
@@ -538,39 +570,30 @@ export default function ArtistDashboard() {
                 </table>
               </div>
             </div>
-
-            {/* Panel desglose por plataforma */}
             {selectedTrack && (
-              <div style={{ ...card, padding:"20px", position:"sticky", top:"80px",
-                height:"fit-content", maxHeight:"80vh", overflowY:"auto" }}>
-                <div style={{ display:"flex", justifyContent:"space-between",
-                  alignItems:"flex-start", marginBottom:"16px" }}>
+              <div style={{ ...card, padding:"20px", position:"sticky", top:"80px", height:"fit-content", maxHeight:"80vh", overflowY:"auto" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"16px" }}>
                   <div>
-                    <p style={label}>Desglose por plataforma</p>
-                    <p style={{ ...base, fontSize:"14px", fontWeight:600, color:c.text, marginTop:"4px" }}>
-                      {selectedTrack}
-                    </p>
+                    <p style={lbl}>{t.breakdown}</p>
+                    <p style={{ ...base, fontSize:"14px", fontWeight:600, color:c.text, marginTop:"4px" }}>{selectedTrack}</p>
                   </div>
                   <button onClick={() => setSelectedTrack(null)}
-                    style={{ ...base, background:"none", border:"none", fontSize:"16px",
-                      color:c.textMute, cursor:"pointer" }}>✕</button>
+                    style={{ ...base, background:"none", border:"none", fontSize:"16px", color:c.textMute, cursor:"pointer" }}>✕</button>
                 </div>
-
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"12px", marginBottom:"16px" }}>
                   <div style={{ padding:"12px", background:c.bg, borderRadius:"6px" }}>
-                    <p style={label}>Total streams</p>
+                    <p style={lbl}>{t.totalStreams}</p>
                     <p style={{ ...base, fontSize:"22px", fontWeight:700, color:c.text, lineHeight:1, marginTop:"4px" }}>
                       {fmt(trackStoreBreakdown.reduce((a:number,s:any)=>a+s.streams,0))}
                     </p>
                   </div>
                   <div style={{ padding:"12px", background:c.greenBg, borderRadius:"6px" }}>
-                    <p style={label}>Total ingresos</p>
+                    <p style={lbl}>{t.totalRevenue}</p>
                     <p style={{ ...base, fontSize:"22px", fontWeight:700, color:c.green, lineHeight:1, marginTop:"4px" }}>
                       {fmtUSD(trackStoreBreakdown.reduce((a:number,s:any)=>a+s.revenue,0))}
                     </p>
                   </div>
                 </div>
-
                 <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
                   {trackStoreBreakdown.map((s:any,i:number) => {
                     const total = trackStoreBreakdown.reduce((a:number,x:any)=>a+x.streams,0);
@@ -586,145 +609,99 @@ export default function ArtistDashboard() {
                           <span style={{ ...base, fontSize:"12px", color:c.green, fontWeight:600 }}>{fmtUSD(s.revenue)}</span>
                         </div>
                         <div style={{ height:"4px", background:c.border, borderRadius:"2px" }}>
-                          <div style={{ height:"100%", borderRadius:"2px",
-                            background:CHART_COLORS[i%CHART_COLORS.length], width:`${pct}%` }} />
+                          <div style={{ height:"100%", borderRadius:"2px", background:CHART_COLORS[i%CHART_COLORS.length], width:`${pct}%` }} />
                         </div>
                       </div>
                     );
                   })}
                 </div>
-
-                <div style={{ marginTop:"12px", padding:"12px", background:c.blueBg,
-                  borderRadius:"6px", border:`1px solid ${c.blueBorder}` }}>
-                  <p style={{ ...base, fontSize:"12px", color:c.blue, lineHeight:1.6 }}>
-                    El ingreso por stream varía según la plataforma. YouTube Premium y Spotify pagan más que TikTok o plataformas ad-supported.
-                  </p>
+                <div style={{ marginTop:"12px", padding:"12px", background:c.blueBg, borderRadius:"6px", border:`1px solid ${c.blueBorder}` }}>
+                  <p style={{ ...base, fontSize:"12px", color:c.blue, lineHeight:1.6 }}>{t.platformNote}</p>
                 </div>
               </div>
             )}
           </div>
         )}
 
-        {/* ─── PAYMENTS ─── */}
+        {/* PAYMENTS */}
         {activeTab==="payments" && (
           <div style={{ display:"flex", flexDirection:"column", gap:"20px" }}>
-
-            {/* KPIs */}
             <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"16px" }}>
               {[
-                { label:"Total generado",    value:fmtUSD2(totalEarned),  color:c.text  },
-                { label:"Total cobrado",     value:fmtUSD2(totalPaid),    color:c.green },
-                { label:"Pendiente de pago", value:fmtUSD2(totalPending), color:canReceive?c.green:c.yellow },
+                { label:t.kpiEarned, value:fmtUSD2(totalEarned),  color:c.text  },
+                { label:t.kpiPaid,   value:fmtUSD2(totalPaid),    color:c.green },
+                { label:t.kpiPending,value:fmtUSD2(totalPending), color:canReceive?c.green:c.yellow },
               ].map((k,i) => (
                 <div key={i} style={{ ...card, padding:"20px 24px" }}>
-                  <p style={label}>{k.label}</p>
-                  <p style={{ ...base, fontSize:"32px", fontWeight:700, color:k.color, lineHeight:1, marginTop:"8px" }}>
-                    {k.value}
-                  </p>
+                  <p style={lbl}>{k.label}</p>
+                  <p style={{ ...base, fontSize:"32px", fontWeight:700, color:k.color, lineHeight:1, marginTop:"8px" }}>{k.value}</p>
                 </div>
               ))}
             </div>
 
-            {/* Próximo pago */}
             <div style={{ ...card, padding:"24px" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"16px" }}>
                 <div>
-                  <p style={label}>Próximo pago</p>
-                  <p style={{ ...base, fontSize:"16px", fontWeight:600, color:c.text, marginTop:"4px", textTransform:"capitalize" }}>
-                    {nextLabel}
-                  </p>
+                  <p style={lbl}>{t.nextPayment}</p>
+                  <p style={{ ...base, fontSize:"16px", fontWeight:600, color:c.text, marginTop:"4px", textTransform:"capitalize" }}>{nextLabel}</p>
                 </div>
-                <span style={badge(canReceive)}>
-                  {canReceive ? "✓ Listo para cobrar" : "Acumulando"}
-                </span>
+                <span style={badge(canReceive)}>{canReceive?t.readyLabel:t.accumulatingLabel}</span>
               </div>
-
-              <p style={{ ...base, fontSize:"32px", fontWeight:700,
-                color:canReceive?c.green:c.text, marginBottom:"16px" }}>
+              <p style={{ ...base, fontSize:"32px", fontWeight:700, color:canReceive?c.green:c.text, marginBottom:"16px" }}>
                 {fmtUSD2(totalPending)}
               </p>
-
               <div style={{ marginBottom:"8px" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"6px" }}>
-                  <span style={{ ...base, fontSize:"12px", color:c.textMute }}>
-                    Progreso hacia el mínimo de $20.00
-                  </span>
-                  <span style={{ ...base, fontSize:"12px", fontWeight:600, color:c.text }}>
-                    {fmtUSD2(totalPending)} / $20.00
-                  </span>
+                  <span style={{ ...base, fontSize:"12px", color:c.textMute }}>{t.progress}</span>
+                  <span style={{ ...base, fontSize:"12px", fontWeight:600, color:c.text }}>{fmtUSD2(totalPending)} / $50.00</span>
                 </div>
                 <div style={{ height:"8px", background:c.borderLight, borderRadius:"4px", overflow:"hidden" }}>
-                  <div style={{
-                    height:"100%", borderRadius:"4px", transition:"width .4s",
-                    background: canReceive ? c.green : totalPending>=threshold*0.5 ? c.yellow : c.red,
-                    width:`${progressPct}%`,
-                  }} />
+                  <div style={{ height:"100%", borderRadius:"4px", transition:"width .4s",
+                    background: canReceive ? c.green : totalPending>=THRESHOLD*0.5 ? c.yellow : c.red,
+                    width:`${progressPct}%` }} />
                 </div>
               </div>
-
               {canReceive ? (
-                <p style={{ ...base, fontSize:"13px", color:c.green, fontWeight:500 }}>
-                  ✓ Superas el mínimo — recibirás el pago en {nextLabel}
-                </p>
+                <p style={{ ...base, fontSize:"13px", color:c.green, fontWeight:500 }}>{t.readyMsg(nextLabel)}</p>
               ) : (
-                <p style={{ ...base, fontSize:"13px", color:c.yellow }}>
-                  Faltan <strong>{fmtUSD2(threshold-totalPending)}</strong> para el mínimo. Tu saldo se acumulará al siguiente trimestre.
-                </p>
+                <p style={{ ...base, fontSize:"13px", color:c.yellow }}>{t.pendingMsg(fmtUSD2(THRESHOLD-totalPending))}</p>
               )}
             </div>
 
-            {/* Política */}
-            <div style={{ ...card, padding:"20px 24px",
-              background:c.bg, border:`1px solid ${c.border}` }}>
+            <div style={{ ...card, padding:"20px 24px", background:c.bg }}>
               <p style={{ ...base, fontSize:"13px", color:c.textSub, lineHeight:1.8 }}>
-                <strong style={{ color:c.text }}>Pagos trimestrales</strong> — enero, abril, julio y octubre.
-                Mínimo por pago: <strong>$20.00</strong>. El saldo se acumula si no llegas al mínimo.
-                Para cualquier duda: <a href="mailto:info@loyalfoxrecords.com"
-                  style={{ color:c.blue, textDecoration:"none" }}>info@loyalfoxrecords.com</a>
+                {t.policy}{" "}
+                <a href="mailto:info@loyalfoxrecords.com" style={{ color:c.blue, textDecoration:"none" }}>
+                  info@loyalfoxrecords.com
+                </a>
               </p>
             </div>
 
-            {/* Historial */}
             <div style={card}>
-              <div style={cardHeader}>
-                <p style={cardTitle}>Historial mes a mes</p>
-              </div>
+              <div style={cardHeader}><p style={cardTitle}>{t.paymentsTitle}</p></div>
               <table style={{ width:"100%", borderCollapse:"collapse" }}>
                 <thead>
                   <tr style={{ background:c.bg }}>
-                    {["Mes","Streams","Tu parte","Estado","Fecha de pago"].map((h,i) => (
+                    {[t.historyMes,t.historyStreams,t.historyShare,t.historyStatus,t.historyDate].map((h,i) => (
                       <th key={i} style={{ ...base, padding:"10px 16px", textAlign:"left",
                         fontSize:"11px", fontWeight:500, color:c.textMute,
-                        borderBottom:`1px solid ${c.border}`,
-                        textTransform:"uppercase", letterSpacing:"0.04em" }}>{h}</th>
+                        borderBottom:`1px solid ${c.border}`, textTransform:"uppercase", letterSpacing:"0.04em" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {royalties.length===0 ? (
-                    <tr>
-                      <td colSpan={5} style={{ ...base, padding:"40px", textAlign:"center",
-                        fontSize:"13px", color:c.textMute }}>Sin datos aún</td>
-                    </tr>
+                    <tr><td colSpan={5} style={{ ...base, padding:"40px", textAlign:"center", fontSize:"13px", color:c.textMute }}>{t.noData}</td></tr>
                   ) : royalties.map((r,i) => (
-                    <tr key={r.id} style={{ borderBottom:`1px solid ${c.borderLight}`,
-                      background:i%2===0?c.white:c.bg }}>
-                      <td style={{ ...base, padding:"12px 16px", fontSize:"13px",
-                        fontWeight:500, color:c.text, textTransform:"capitalize" }}>
-                        {fmtMonthFull(r.month.slice(0,7))}
+                    <tr key={r.id} style={{ borderBottom:`1px solid ${c.borderLight}`, background:i%2===0?c.white:c.bg }}>
+                      <td style={{ ...base, padding:"12px 16px", fontSize:"13px", fontWeight:500, color:c.text, textTransform:"capitalize" }}>
+                        {fmtMonthFull(r.month.slice(0,7), lang)}
                       </td>
-                      <td style={{ ...base, padding:"12px 16px", fontSize:"13px", color:c.textSub }}>
-                        {fmt(r.total_streams)}
-                      </td>
-                      <td style={{ ...base, padding:"12px 16px", fontSize:"13px",
-                        fontWeight:600, color:c.green }}>
-                        {fmtUSD(r.artist_share)}
-                      </td>
-                      <td style={{ padding:"12px 16px" }}>
-                        <span style={badge(r.paid)}>{r.paid?"✓ Pagado":"Acumulando"}</span>
-                      </td>
+                      <td style={{ ...base, padding:"12px 16px", fontSize:"13px", color:c.textSub }}>{fmt(r.total_streams)}</td>
+                      <td style={{ ...base, padding:"12px 16px", fontSize:"13px", fontWeight:600, color:c.green }}>{fmtUSD(r.artist_share)}</td>
+                      <td style={{ padding:"12px 16px" }}><span style={badge(r.paid)}>{r.paid?t.paid:t.accumulating}</span></td>
                       <td style={{ ...base, padding:"12px 16px", fontSize:"12px", color:c.textMute }}>
-                        {r.paid && r.paid_at ? new Date(r.paid_at).toLocaleDateString("es") : "—"}
+                        {r.paid && r.paid_at ? new Date(r.paid_at).toLocaleDateString(lang==="en"?"en":"es") : "—"}
                       </td>
                     </tr>
                   ))}
@@ -733,8 +710,49 @@ export default function ArtistDashboard() {
             </div>
           </div>
         )}
-      </div>
 
+        {/* FAQ */}
+        {activeTab==="faq" && (
+          <div style={{ maxWidth:"720px" }}>
+            <p style={{ ...base, fontSize:"13px", color:c.textMute, marginBottom:"24px" }}>
+              {lang==="en"
+                ? "Answers to the most common questions about your dashboard and payments."
+                : "Respuestas a las preguntas más comunes sobre tu dashboard y pagos."}
+            </p>
+            <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+              {t.faqs.map((faq, i) => (
+                <div key={i} style={{ ...card, overflow:"visible" }}>
+                  <button onClick={() => setOpenFaq(openFaq===i?null:i)}
+                    style={{ ...base, width:"100%", padding:"18px 20px",
+                      display:"flex", justifyContent:"space-between", alignItems:"center",
+                      background:"none", border:"none", cursor:"pointer", textAlign:"left" }}>
+                    <span style={{ fontSize:"14px", fontWeight:600, color:c.text, flex:1, paddingRight:"16px" }}>
+                      {faq.q}
+                    </span>
+                    <span style={{ fontSize:"18px", color:c.textMute, flexShrink:0,
+                      transform: openFaq===i ? "rotate(45deg)" : "none", transition:"transform .2s" }}>+</span>
+                  </button>
+                  {openFaq===i && (
+                    <div style={{ padding:"0 20px 18px", borderTop:`1px solid ${c.borderLight}` }}>
+                      <p style={{ ...base, fontSize:"13px", color:c.textSub, lineHeight:1.8, paddingTop:"14px" }}>
+                        {faq.a}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop:"24px", padding:"16px 20px", background:c.blueBg,
+              borderRadius:"8px", border:`1px solid ${c.blueBorder}` }}>
+              <p style={{ ...base, fontSize:"13px", color:c.blue, lineHeight:1.7 }}>
+                {lang==="en"
+                  ? <>Still have questions? Email us at <a href="mailto:info@loyalfoxrecords.com" style={{ fontWeight:600 }}>info@loyalfoxrecords.com</a></>
+                  : <>¿Tienes más dudas? Escríbenos a <a href="mailto:info@loyalfoxrecords.com" style={{ fontWeight:600 }}>info@loyalfoxrecords.com</a></>}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
