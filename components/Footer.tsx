@@ -1,12 +1,40 @@
 "use client";
 import Image from "next/image";
 import { useIsMobile } from "@/lib/useIsMobile";
+import { useLocale } from "@/lib/LocaleContext";
 
 const LOGO = "https://i.ibb.co/KjqCYGmY/descarga-1.png";
 
 export default function Footer() {
   const year = new Date().getFullYear();
   const isMobile = useIsMobile();
+  const { t } = useLocale();
+
+  const colMusic = {
+    title: t.footer?.colMusic || "Música",
+    links: [
+      { label: t.footer?.linkCatalog   || "Catálogo",       href:"#catalog"    },
+      { label: t.footer?.linkPlaylists || "Playlists",      href:"#playlists"  },
+      { label: t.footer?.linkArtists   || "Artistas",       href:"/artists"    },
+      { label: t.footer?.linkStreamers || "Streamers",      href:"/streamers"  },
+    ],
+  };
+  const colLabel = {
+    title: t.footer?.colLabel || "Sello",
+    links: [
+      { label: t.footer?.linkAbout   || "Sobre nosotros", href:"#about"      },
+      { label: t.footer?.linkBlog    || "Noticias",       href:"#blog"       },
+      { label: t.footer?.linkContact || "Contacto",       href:"#contact"    },
+      { label: t.footer?.linkDemo    || "Enviar demo",    href:"/send-demo"  },
+    ],
+  };
+  const colPortals = {
+    title: t.footer?.colPortals || "Portales",
+    links: [
+      { label: t.footer?.linkArtistPortal   || "Portal artistas",  href:"/artists-portal/login"   },
+      { label: t.footer?.linkStreamerPortal  || "Portal streamers", href:"/streamers-portal/login" },
+    ],
+  };
 
   /* ── MÓVIL ── */
   if (isMobile) return (
@@ -23,7 +51,7 @@ export default function Footer() {
 
         <p style={{ fontFamily:"var(--font-mono)", fontSize:"11px",
           lineHeight:1.9, color:"rgba(240,240,240,0.25)", marginBottom:"24px" }}>
-          Sello de música electrónica independiente. House, deep, ambient, techno. Fundado en España, 2025.
+          {t.footer?.desc || "Sello de música electrónica independiente. House, deep, ambient, techno. Fundado en España, 2025."}
         </p>
 
         <div style={{ display:"flex", gap:"20px", marginBottom:"32px" }}>
@@ -34,24 +62,10 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Links en 2 columnas */}
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"24px",
           marginBottom:"32px", paddingTop:"24px",
           borderTop:"1px solid rgba(255,255,255,0.04)" }}>
-          {[
-            { title:"Música", links:[
-              { label:"Catálogo",  href:"#catalog"   },
-              { label:"Playlists", href:"#playlists" },
-              { label:"Artistas",  href:"/artists"   },
-              { label:"Streamers", href:"/streamers" },
-            ]},
-            { title:"Sello", links:[
-              { label:"Sobre nosotros", href:"#about"   },
-              { label:"Contacto",       href:"#contact" },
-              { label:"Enviar demo",    href:"/send-demo" },
-              { label:"Portal artistas",href:"/artists-portal/login" },
-            ]},
-          ].map(col => (
+          {[colMusic, colLabel].map(col => (
             <div key={col.title}>
               <p style={{ fontFamily:"var(--font-mono)", fontSize:"9px",
                 letterSpacing:"3px", textTransform:"uppercase",
@@ -79,14 +93,14 @@ export default function Footer() {
           </p>
           <p style={{ fontFamily:"var(--font-mono)", fontSize:"8px",
             letterSpacing:"1px", color:"rgba(168,230,61,0.3)" }}>
-            EST. 2025 · ESPAÑA
+            {t.footer?.est || "EST. 2025 · ESPAÑA"}
           </p>
         </div>
       </div>
     </footer>
   );
 
-  /* ── DESKTOP ── (original) */
+  /* ── DESKTOP ── */
   return (
     <footer style={{ background:"#050505", borderTop:"1px solid rgba(168,230,61,0.08)" }}>
       <div style={{ padding:"80px 56px 0", borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
@@ -104,7 +118,7 @@ export default function Footer() {
             <p style={{ fontFamily:"var(--font-mono)", fontSize:"11px",
               lineHeight:2, color:"rgba(240,240,240,0.25)",
               maxWidth:"280px", marginBottom:"32px" }}>
-              Sello de música electrónica independiente. House, deep, ambient, techno. Fundado en España, 2025.
+              {t.footer?.desc || "Sello de música electrónica independiente. House, deep, ambient, techno. Fundado en España, 2025."}
             </p>
             <div style={{ display:"flex", gap:"16px" }}>
               {["Instagram","Spotify","SoundCloud"].map(s => (
@@ -118,24 +132,8 @@ export default function Footer() {
               ))}
             </div>
           </div>
-          {[
-            { title:"Música", links:[
-              { label:"Catálogo",  href:"#catalog"   },
-              { label:"Playlists", href:"#playlists" },
-              { label:"Artistas",  href:"/artists"   },
-              { label:"Streamers", href:"/streamers" },
-            ]},
-            { title:"Sello", links:[
-              { label:"Sobre nosotros", href:"#about"   },
-              { label:"Noticias",       href:"#blog"    },
-              { label:"Contacto",       href:"#contact" },
-              { label:"Enviar demo",    href:"/send-demo" },
-            ]},
-            { title:"Portales", links:[
-              { label:"Portal artistas",  href:"/artists-portal/login"  },
-              { label:"Portal streamers", href:"/streamers-portal/login" },
-            ]},
-          ].map(col => (
+
+          {[colMusic, colLabel, colPortals].map(col => (
             <div key={col.title}>
               <p style={{ fontFamily:"var(--font-mono)", fontSize:"9px",
                 letterSpacing:"3px", textTransform:"uppercase",
@@ -161,11 +159,11 @@ export default function Footer() {
         alignItems:"center", flexWrap:"wrap", gap:"12px" }}>
         <p style={{ fontFamily:"var(--font-mono)", fontSize:"9px",
           letterSpacing:"2px", color:"rgba(240,240,240,0.15)" }}>
-          © {year} LOYALFOX RECORDS. TODOS LOS DERECHOS RESERVADOS.
+          © {year} LOYALFOX RECORDS. {t.footer?.rights || "TODOS LOS DERECHOS RESERVADOS."}
         </p>
         <p style={{ fontFamily:"var(--font-mono)", fontSize:"9px",
           letterSpacing:"2px", color:"rgba(168,230,61,0.3)" }}>
-          EST. 2025 · ESPAÑA
+          {t.footer?.est || "EST. 2025 · ESPAÑA"}
         </p>
       </div>
     </footer>

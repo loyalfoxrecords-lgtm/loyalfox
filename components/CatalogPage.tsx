@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { useIsMobile } from "@/lib/useIsMobile";
+import { useLocale } from "@/lib/LocaleContext";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
@@ -11,37 +12,36 @@ type Track = {
   bpm: number; image_url: string; slug: string;
 };
 
-const GENRES = ["all","house","deep house","techno","ambient",
-  "afro house","melodic house","progressive house","deep","organic house"];
-
 export default function CatalogPage() {
   const [tracks, setTracks]   = useState<Track[]>([]);
   const [active, setActive]   = useState("all");
   const [hovered, setHovered] = useState<string|null>(null);
   const [search, setSearch]   = useState("");
   const isMobile = useIsMobile();
+  const { t } = useLocale();
 
   useEffect(() => {
     supabase.from("tracks").select("*").order("created_at",{ascending:false})
       .then(({data}) => { if(data) setTracks(data); });
   }, []);
 
-  const filtered = tracks.filter(t => {
-    const matchGenre  = active==="all" || t.genre?.toLowerCase()===active;
+  const filtered = tracks.filter(tr => {
+    const matchGenre  = active==="all" || tr.genre?.toLowerCase()===active;
     const matchSearch = !search ||
-      t.name.toLowerCase().includes(search.toLowerCase()) ||
-      t.artist.toLowerCase().includes(search.toLowerCase());
+      tr.name.toLowerCase().includes(search.toLowerCase()) ||
+      tr.artist.toLowerCase().includes(search.toLowerCase());
     return matchGenre && matchSearch;
   });
 
-  // Géneros que realmente tienen tracks
-  const availableGenres = ["all", ...Array.from(new Set(tracks.map(t=>t.genre?.toLowerCase()).filter(Boolean)))];
+  const availableGenres = ["all", ...Array.from(new Set(tracks.map(tr=>tr.genre?.toLowerCase()).filter(Boolean)))];
+  const allLabel = t.catalog?.eyebrow === "Catalog" ? "All" : t.catalog?.eyebrow === "Katalog" ? "Alle" : "Todo";
+  const titleLines = (t.catalog?.title || "MÚSICA\nDEL SELLO").split("\n");
+  const searchPh = t.artists?.searchPh?.replace("artista","track o artista") || "Buscar track o artista...";
 
   return (
     <div style={{ background:"#080808", minHeight:"100vh" }}>
       <Navbar />
 
-      {/* Header */}
       <div style={{ padding: isMobile?"80px 20px 40px":"140px 56px 60px",
         position:"relative", overflow:"hidden" }}>
         <div style={{ position:"absolute", right:"48px", top:"50%",
@@ -50,6 +50,7 @@ export default function CatalogPage() {
           color:"rgba(240,240,240,0.02)", lineHeight:1,
           userSelect:"none", pointerEvents:"none" }}>01</div>
 
+        {/* Breadcrumb */}
         <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"24px" }}>
           <a href="/" style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
             letterSpacing:"2px", textTransform:"uppercase",
@@ -61,13 +62,12 @@ export default function CatalogPage() {
           <span style={{ color:"rgba(240,240,240,0.2)" }}>/</span>
           <span style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
             letterSpacing:"2px", textTransform:"uppercase", color:"#a8e63d" }}>
-            Catálogo
+            {t.catalog?.eyebrow || "Catálogo"}
           </span>
         </div>
 
         <div style={{ display:"flex", alignItems:"flex-end",
-          justifyContent:"space-between", flexWrap:"wrap", gap:"24px",
-          marginBottom:"40px" }}>
+          justifyContent:"space-between", flexWrap:"wrap", gap:"24px", marginBottom:"40px" }}>
           <div>
             <div style={{ display:"flex", alignItems:"center", gap:"16px", marginBottom:"16px" }}>
               <div style={{ width:"40px", height:"2px", background:"#a8e63d" }} />
@@ -79,16 +79,15 @@ export default function CatalogPage() {
             <h1 style={{ fontFamily:"var(--font-display)",
               fontSize: isMobile?"clamp(40px,12vw,64px)":"clamp(56px,8vw,110px)",
               lineHeight:0.88, letterSpacing:"-1px", color:"#f0f0f0" }}>
-              CATÁLOGO<br />
+              {titleLines[0]}<br />
               <span style={{ color:"transparent",
                 WebkitTextStroke: isMobile?"1.5px rgba(240,240,240,0.12)":"2px rgba(240,240,240,0.12)" }}>
-                COMPLETO
+                {titleLines[1]}
               </span>
             </h1>
           </div>
 
-          {/* Buscador */}
-          <input placeholder="Buscar track o artista..."
+          <input placeholder={searchPh}
             value={search} onChange={e => setSearch(e.target.value)}
             style={{ padding:"12px 16px",
               background:"rgba(255,255,255,0.05)",
@@ -103,7 +102,7 @@ export default function CatalogPage() {
             onBlur={e => e.currentTarget.style.borderColor="rgba(255,255,255,0.1)"} />
         </div>
 
-        {/* Filtros — scroll horizontal en móvil */}
+        {/* Filtros */}
         <div style={{ display:"flex", gap:"4px",
           flexWrap: isMobile?"nowrap":"wrap",
           overflowX: isMobile?"auto":"visible",
@@ -118,11 +117,10 @@ export default function CatalogPage() {
                 background: active===g?"#a8e63d":"transparent",
                 border: active===g?"1px solid #a8e63d":"1px solid rgba(255,255,255,0.1)",
                 color: active===g?"#080808":"rgba(240,240,240,0.4)",
-                cursor:"pointer", transition:"all .25s",
-                fontWeight: active===g?700:400 }}
+                cursor:"pointer", transition:"all .25s", fontWeight:active===g?700:400 }}
               onMouseEnter={e => { if(active!==g){ (e.currentTarget as HTMLElement).style.borderColor="#a8e63d"; (e.currentTarget as HTMLElement).style.color="#a8e63d"; }}}
               onMouseLeave={e => { if(active!==g){ (e.currentTarget as HTMLElement).style.borderColor="rgba(255,255,255,0.1)"; (e.currentTarget as HTMLElement).style.color="rgba(240,240,240,0.4)"; }}}>
-              {g==="all"?"Todo":g}
+              {g==="all" ? allLabel : g}
             </button>
           ))}
         </div>
@@ -139,10 +137,8 @@ export default function CatalogPage() {
           </div>
         ) : (
           <div style={{ display:"grid",
-            gridTemplateColumns: isMobile
-              ?"repeat(2,1fr)"
-              :"repeat(auto-fill, minmax(220px,1fr))",
-            gap:"2px", paddingBottom:"0" }}>
+            gridTemplateColumns: isMobile?"repeat(2,1fr)":"repeat(auto-fill, minmax(220px,1fr))",
+            gap:"2px" }}>
             {filtered.map((track,i) => (
               <motion.a key={track.id}
                 href={track.slug?`/catalog/${track.slug}`:"#"}
@@ -179,7 +175,6 @@ export default function CatalogPage() {
                   <motion.div style={{ position:"absolute", inset:0, background:"rgba(168,230,61,0.06)" }}
                     animate={{ opacity:hovered===track.id?1:0 }} transition={{ duration:0.3 }} />
                 )}
-
                 {!isMobile && (
                   <motion.div style={{ position:"absolute", inset:0, zIndex:3,
                     display:"flex", alignItems:"center", justifyContent:"center" }}
@@ -207,7 +202,7 @@ export default function CatalogPage() {
                 )}
 
                 <div style={{ position:"absolute", bottom:0, left:0, right:0,
-                  padding: isMobile?"10px 10px":"16px 14px 14px", zIndex:3 }}>
+                  padding: isMobile?"10px":"16px 14px 14px", zIndex:3 }}>
                   <motion.p style={{ fontFamily:"var(--font-display)",
                     fontSize: isMobile?"14px":"17px",
                     lineHeight:1, marginBottom:"3px", letterSpacing:"0.5px" }}
