@@ -241,7 +241,10 @@ export default function AdminArtistAccounts() {
   const [csvStatus, setCsvStatus] = useState("");
   const [loading, setLoading]     = useState(false);
   const [uploadingProof, setUploadingProof] = useState<string|null>(null);
-  const [payingId, setPayingId]   = useState<string|null>(null);
+  const [payingId, setPayingId]             = useState<string|null>(null);
+  const [sendingCredentials, setSendingCredentials] = useState<string|null>(null);
+  const [credentialsSent, setCredentialsSent]       = useState<Set<string>>(new Set());
+  const [tempPasswords, setTempPasswords]           = useState<Record<string,string>>({});
 
   const load = async () => {
     const [{ data:a }, { data:r }] = await Promise.all([
@@ -302,6 +305,31 @@ export default function AdminArtistAccounts() {
     });
     await load();
     setPayingId(null);
+  };
+
+  const sendCredentials = async (account: ArtistAccount) => {
+    const tempPass = tempPasswords[account.id] || "";
+    if (!tempPass.trim()) {
+      alert("Escribe una contraseña temporal primero"); return;
+    }
+    setSendingCredentials(account.id);
+    const res = await fetch("/api/admin/send-credentials", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        name:        account.name,
+        artist_name: account.artist_name,
+        email:       account.email,
+        password:    tempPass,
+      }),
+    });
+    if (res.ok) {
+      setCredentialsSent(s => new Set([...s, account.id]));
+      setTempPasswords(p => ({...p, [account.id]:""}));
+      alert(`✓ Credenciales enviadas a ${account.email}`);
+    } else {
+      alert("Error al enviar el email. Comprueba que RESEND_API_KEY está configurado en Vercel.");
+    }
+    setSendingCredentials(null);
   };
 
   const deleteAccount = async (id: string, name: string) => {
@@ -768,6 +796,44 @@ export default function AdminArtistAccounts() {
                     </>
                   )}
                 </div>
+
+                {/* Enviar acceso al portal */}
+                {!selectedAccount.is_own_artist && (
+                  <div style={{ padding:"16px 20px", borderBottom:`1px solid ${css.border}` }}>
+                    <p style={{ fontSize:"11px", fontWeight:600, color:css.textMute,
+                      fontFamily:"system-ui", textTransform:"uppercase" as any,
+                      letterSpacing:"0.05em", marginBottom:"10px" }}>
+                      📧 Enviar acceso al portal
+                    </p>
+                    <p style={{ fontSize:"12px", color:css.textMute, fontFamily:"system-ui",
+                      marginBottom:"10px", lineHeight:1.5 }}>
+                      Email: <strong style={{ color:css.text }}>{selectedAccount.email}</strong>
+                    </p>
+                    <div style={{ display:"flex", gap:"8px", marginBottom:"8px" }}>
+                      <input
+                        type="text"
+                        placeholder="Contraseña temporal..."
+                        value={tempPasswords[selectedAccount.id] || ""}
+                        onChange={e => setTempPasswords(p => ({...p, [selectedAccount.id]:e.target.value}))}
+                        style={{ ...hs.input, flex:1 }}
+                      />
+                      <button
+                        onClick={() => sendCredentials(selectedAccount)}
+                        disabled={sendingCredentials===selectedAccount.id || !tempPasswords[selectedAccount.id]?.trim()}
+                        style={{ ...hs.btnGreen, whiteSpace:"nowrap" as any, padding:"7px 14px",
+                          opacity:(sendingCredentials===selectedAccount.id||!tempPasswords[selectedAccount.id]?.trim())?0.5:1 }}>
+                        {sendingCredentials===selectedAccount.id
+                          ? "Enviando..."
+                          : credentialsSent.has(selectedAccount.id)
+                          ? "✓ Enviado"
+                          : "Enviar acceso"}
+                      </button>
+                    </div>
+                    <p style={{ fontSize:"11px", color:css.textMute, fontFamily:"system-ui" }}>
+                      El artista recibirá un email con sus credenciales y un enlace al portal.
+                    </p>
+                  </div>
+                )}
 
                 {/* Historial */}
                 <div>
