@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useIsMobile } from "@/lib/useIsMobile";
 import { useLocale } from "@/lib/LocaleContext";
 
-type Playlist = { id:string; name:string; image_url:string; description:string; };
+type Playlist = { id:string; name:string; image_url:string; description:string; url_spotify:string; };
 
 export default function Playlists() {
   const { t } = useLocale();
@@ -23,6 +23,9 @@ export default function Playlists() {
   }, []);
 
   const titleLines = (t.playlists?.title || "CURATED\nPLAYLISTS").split("\n");
+
+  const getHref = (pl: Playlist) => pl.url_spotify || "#";
+  const getTarget = (pl: Playlist) => pl.url_spotify ? "_blank" : "_self";
 
   /* ── MÓVIL ── */
   if (isMobile) return (
@@ -54,7 +57,7 @@ export default function Playlists() {
       ) : (
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"2px" }}>
           {playlists.map((pl,i) => (
-            <a key={pl.id} href="/playlists"
+            <a key={pl.id} href={getHref(pl)} target={getTarget(pl)} rel="noreferrer"
               style={{ position:"relative", display:"block", aspectRatio:"1",
                 overflow:"hidden", background:"#111", textDecoration:"none" }}>
               {pl.image_url ? (
@@ -135,7 +138,8 @@ export default function Playlists() {
         <div style={{ display:"grid",
           gridTemplateColumns:"repeat(auto-fill, minmax(260px,1fr))", gap:"2px" }}>
           {playlists.map((pl,i) => (
-            <motion.a key={pl.id} href="/playlists"
+            <motion.a key={pl.id}
+              href={getHref(pl)} target={getTarget(pl)} rel="noreferrer"
               initial={{ opacity:0, y:24 }} whileInView={{ opacity:1, y:0 }}
               viewport={{ once:true, margin:"-40px" }}
               transition={{ duration:0.6, delay:i*0.07, ease:[0.22,1,0.36,1] }}
