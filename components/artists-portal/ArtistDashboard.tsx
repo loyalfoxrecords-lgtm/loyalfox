@@ -48,7 +48,7 @@ const i18n = {
     kpi3:"Ya cobrado", kpi3sub:"Pagado",
     kpi4:"Pendiente de cobro", kpi4sub:"Acumulando",
     tabOverview:"Resumen", tabMonthly:"Por mes", tabTracks:"Tracks",
-    tabPayments:"Pagos", tabFaq:"FAQ", tabContracts:"Contratos", tabChat:"Mensajes",
+    tabPayments:"Pagos", tabFaq:"FAQ", tabContracts:"Contratos", tabChat:"Mensajes", tabProfile:"Mi perfil",
     streamEvolution:"Evolución de streams", revenueByMonth:"Ingresos por mes (USD)",
     topTracks:"Top tracks", byPlatform:"Por plataforma",
     noData:"Sin datos", noDataFilter:"Sin datos para este filtro",
@@ -101,7 +101,7 @@ const i18n = {
     kpi3:"Already paid", kpi3sub:"Transferred",
     kpi4:"Pending payment", kpi4sub:"Accumulating",
     tabOverview:"Overview", tabMonthly:"By month", tabTracks:"Tracks",
-    tabPayments:"Payments", tabFaq:"FAQ", tabContracts:"Contracts", tabChat:"Messages",
+    tabPayments:"Payments", tabFaq:"FAQ", tabContracts:"Contracts", tabChat:"Messages", tabProfile:"My profile",
     streamEvolution:"Stream evolution", revenueByMonth:"Revenue by month (USD)",
     topTracks:"Top tracks", byPlatform:"By platform",
     noData:"No data yet", noDataFilter:"No data for this filter",
@@ -260,13 +260,22 @@ export default function ArtistDashboard() {
 
   const [name, setName]               = useState("");
   const [artistName, setArtistName]   = useState("");
+  const [avatarUrl, setAvatarUrl]     = useState("");
   const [royalties, setRoyalties]     = useState<Royalty[]>([]);
   const [tracks, setTracks]           = useState<Track[]>([]);
   const [messages, setMessages]       = useState<Message[]>([]);
   const [contracts, setContracts]     = useState<Contract[]>([]);
   const [loading, setLoading]         = useState(true);
 
-  const [activeTab, setActiveTab]     = useState<"overview"|"monthly"|"tracks"|"payments"|"faq"|"contracts"|"chat">("overview");
+  // Perfil
+  const [currentPass, setCurrentPass]   = useState("");
+  const [newPass, setNewPass]           = useState("");
+  const [confirmPass, setConfirmPass]   = useState("");
+  const [savingPass, setSavingPass]     = useState(false);
+  const [passMsg, setPassMsg]           = useState<{ok:boolean; text:string}|null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  const [activeTab, setActiveTab]     = useState<"overview"|"monthly"|"tracks"|"payments"|"faq"|"contracts"|"chat"|"profile">("overview");
   const [activeMonth, setActiveMonth] = useState<string|null>(null);
   const [activeStore, setActiveStore] = useState<string|null>(null);
   const [selectedTrack, setSelectedTrack] = useState<string|null>(null);
@@ -287,6 +296,7 @@ export default function ArtistDashboard() {
       .then(r => { if(!r.ok) router.push("/artists-portal/login"); return r.json(); })
       .then(data => {
         setName(data.name); setArtistName(data.artist_name);
+        setAvatarUrl(data.avatar_url || "");
         setRoyalties(data.royalties||[]); setTracks(data.tracks||[]);
         setLoading(false);
       }).catch(() => router.push("/artists-portal/login"));
@@ -527,6 +537,7 @@ export default function ArtistDashboard() {
           {tabBtn("contracts", t.tabContracts, pendingContracts)}
           {tabBtn("chat",      t.tabChat, unreadCount)}
           {tabBtn("faq",       t.tabFaq)}
+          {tabBtn("profile",   t.tabProfile)}
         </div>
 
         {/* OVERVIEW */}
@@ -914,69 +925,278 @@ export default function ArtistDashboard() {
 
         {/* CHAT */}
         {activeTab==="chat" && (
-          <div style={{ maxWidth:"700px" }}>
-            <p style={{ ...base, fontSize:"13px", fontWeight:600, color:c.text, marginBottom:"4px" }}>{t.chatTitle}</p>
-            <p style={{ ...base, fontSize:"12px", color:c.textMute, marginBottom:"16px" }}>
-              {lang==="en"
-                ? "We usually reply within 24–48 hours."
-                : "Solemos responder en 24–48 horas."}
-            </p>
-            <div style={{ ...card, display:"flex", flexDirection:"column", height:"500px" }}>
+          <div style={{ maxWidth:"680px" }}>
+            {/* Header chat */}
+            <div style={{ display:"flex", alignItems:"center", gap:"12px", marginBottom:"20px" }}>
+              <div style={{ width:"40px", height:"40px", borderRadius:"50%",
+                background:"linear-gradient(135deg, #111827, #374151)",
+                display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <span style={{ fontSize:"16px" }}>🎵</span>
+              </div>
+              <div>
+                <p style={{ ...base, fontSize:"14px", fontWeight:600, color:c.text }}>LoyalFox Records</p>
+                <div style={{ display:"flex", alignItems:"center", gap:"6px" }}>
+                  <div style={{ width:"7px", height:"7px", borderRadius:"50%", background:c.green }} />
+                  <p style={{ ...base, fontSize:"12px", color:c.green }}>
+                    {lang==="en"?"Online · replies in 24–48h":"Online · responde en 24–48h"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Área de mensajes */}
+            <div style={{ background:c.white, border:`1px solid ${c.border}`,
+              borderRadius:"16px", overflow:"hidden",
+              boxShadow:"0 4px 24px rgba(0,0,0,0.06)", display:"flex",
+              flexDirection:"column", height:"560px" }}>
+
               {/* Mensajes */}
-              <div style={{ flex:1, overflowY:"auto", padding:"20px", display:"flex", flexDirection:"column", gap:"12px" }}>
+              <div style={{ flex:1, overflowY:"auto", padding:"24px 20px",
+                display:"flex", flexDirection:"column", gap:"16px",
+                background:"linear-gradient(to bottom, #f8fafc, #f9fafb)" }}>
                 {messages.length===0 ? (
-                  <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <p style={{ ...base, fontSize:"13px", color:c.textMute, textAlign:"center" }}>{t.chatNoMessages}</p>
+                  <div style={{ flex:1, display:"flex", flexDirection:"column",
+                    alignItems:"center", justifyContent:"center", gap:"12px", padding:"40px" }}>
+                    <div style={{ width:"56px", height:"56px", borderRadius:"50%",
+                      background:c.borderLight, display:"flex", alignItems:"center",
+                      justifyContent:"center", fontSize:"24px" }}>💬</div>
+                    <p style={{ ...base, fontSize:"13px", color:c.textMute, textAlign:"center" }}>
+                      {t.chatNoMessages}
+                    </p>
                   </div>
-                ) : messages.map(m => (
-                  <div key={m.id} style={{ display:"flex", justifyContent:m.sender==="artist"?"flex-end":"flex-start" }}>
-                    <div style={{ maxWidth:"75%" }}>
-                      <p style={{ ...base, fontSize:"10px", color:c.textMute, marginBottom:"3px",
-                        textAlign:m.sender==="artist"?"right":"left" }}>
-                        {m.sender==="artist"?t.chatYou:t.chatAdmin}
-                      </p>
-                      <div style={{
-                        padding:"10px 14px",
-                        borderRadius:m.sender==="artist"?"12px 12px 2px 12px":"12px 12px 12px 2px",
-                        background:m.sender==="artist"?c.accent:c.bg,
-                        border:m.sender==="artist"?"none":`1px solid ${c.border}`,
-                      }}>
-                        <p style={{ ...base, fontSize:"13px", lineHeight:1.6, margin:0,
-                          color:m.sender==="artist"?c.white:c.text }}>
-                          {m.message}
-                        </p>
+                ) : messages.map((m,idx) => {
+                  const isArtist = m.sender==="artist";
+                  const showDate = idx===0 || new Date(m.created_at).toDateString() !== new Date(messages[idx-1].created_at).toDateString();
+                  return (
+                    <div key={m.id}>
+                      {showDate && (
+                        <div style={{ textAlign:"center", margin:"8px 0" }}>
+                          <span style={{ ...base, fontSize:"10px", color:c.textMute,
+                            background:c.borderLight, padding:"3px 10px",
+                            borderRadius:"9999px" }}>
+                            {new Date(m.created_at).toLocaleDateString(lang==="en"?"en":"es",{weekday:"short",day:"numeric",month:"short"})}
+                          </span>
+                        </div>
+                      )}
+                      <div style={{ display:"flex", justifyContent:isArtist?"flex-end":"flex-start",
+                        alignItems:"flex-end", gap:"8px" }}>
+                        {!isArtist && (
+                          <div style={{ width:"28px", height:"28px", borderRadius:"50%",
+                            background:"linear-gradient(135deg, #111827, #374151)",
+                            display:"flex", alignItems:"center", justifyContent:"center",
+                            flexShrink:0, fontSize:"12px" }}>🎵</div>
+                        )}
+                        <div style={{ maxWidth:"72%", display:"flex", flexDirection:"column",
+                          alignItems:isArtist?"flex-end":"flex-start", gap:"4px" }}>
+                          <div style={{
+                            padding:"10px 14px",
+                            borderRadius:isArtist?"18px 18px 4px 18px":"18px 18px 18px 4px",
+                            background:isArtist?"#111827":"#ffffff",
+                            border:isArtist?"none":`1px solid ${c.border}`,
+                            boxShadow:isArtist?"0 2px 8px rgba(0,0,0,0.15)":"0 1px 4px rgba(0,0,0,0.06)",
+                          }}>
+                            <p style={{ ...base, fontSize:"13px", lineHeight:1.6, margin:0,
+                              color:isArtist?"#ffffff":c.text }}>
+                              {m.message}
+                            </p>
+                          </div>
+                          <p style={{ ...base, fontSize:"10px", color:c.textMute }}>
+                            {fmtTime(m.created_at)}
+                            {isArtist && <span style={{ marginLeft:"4px" }}>✓</span>}
+                          </p>
+                        </div>
+                        {isArtist && avatarUrl ? (
+                          <img src={avatarUrl} alt="avatar"
+                            style={{ width:"28px", height:"28px", borderRadius:"50%",
+                              objectFit:"cover", flexShrink:0 }} />
+                        ) : isArtist && (
+                          <div style={{ width:"28px", height:"28px", borderRadius:"50%",
+                            background:c.accent, display:"flex", alignItems:"center",
+                            justifyContent:"center", flexShrink:0,
+                            fontSize:"11px", fontWeight:700, color:c.white }}>
+                            {artistName[0]?.toUpperCase()}
+                          </div>
+                        )}
                       </div>
-                      <p style={{ ...base, fontSize:"10px", color:c.textMute, marginTop:"3px",
-                        textAlign:m.sender==="artist"?"right":"left" }}>
-                        {fmtTime(m.created_at)}
-                      </p>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 <div ref={chatBottomRef} />
               </div>
+
               {/* Input */}
               <div style={{ padding:"14px 16px", borderTop:`1px solid ${c.border}`,
-                display:"flex", gap:"8px", alignItems:"flex-end" }}>
+                background:c.white, display:"flex", gap:"10px", alignItems:"flex-end" }}>
                 <textarea
                   value={chatMsg}
                   onChange={e => setChatMsg(e.target.value)}
                   onKeyDown={e => { if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();} }}
                   placeholder={t.chatPlaceholder}
-                  rows={2}
-                  style={{ flex:1, padding:"10px 12px", border:`1px solid ${c.border}`,
-                    borderRadius:"8px", fontFamily:"system-ui", fontSize:"13px",
-                    color:c.text, resize:"none", outline:"none", background:c.white }}
-                  onFocus={e=>e.currentTarget.style.borderColor=c.accent}
-                  onBlur={e=>e.currentTarget.style.borderColor=c.border}
+                  rows={1}
+                  style={{ flex:1, padding:"10px 14px",
+                    border:`1.5px solid ${c.border}`, borderRadius:"12px",
+                    fontFamily:"system-ui", fontSize:"13px", color:c.text,
+                    resize:"none", outline:"none", background:"#f8fafc",
+                    lineHeight:1.5, maxHeight:"100px",
+                    transition:"border-color .2s" }}
+                  onFocus={e => e.currentTarget.style.borderColor=c.accent}
+                  onBlur={e => e.currentTarget.style.borderColor=c.border}
                 />
                 <button onClick={sendMessage} disabled={chatSending||!chatMsg.trim()}
-                  style={{ ...base, padding:"10px 18px", borderRadius:"8px", border:"none",
-                    background:c.accent, color:c.white, fontSize:"13px",
-                    fontWeight:600, cursor:"pointer", opacity:(chatSending||!chatMsg.trim())?0.5:1 }}>
-                  {t.chatSend}
+                  style={{ ...base, width:"40px", height:"40px", borderRadius:"50%",
+                    border:"none", background:chatMsg.trim()?c.accent:c.borderLight,
+                    color:chatMsg.trim()?c.white:c.textMute, fontSize:"16px",
+                    cursor:chatMsg.trim()?"pointer":"default",
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                    transition:"all .2s", flexShrink:0 }}>
+                  {chatSending ? "..." : "↑"}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* PROFILE */}
+        {activeTab==="profile" && (
+          <div style={{ maxWidth:"560px", display:"flex", flexDirection:"column", gap:"20px" }}>
+
+            {/* Avatar */}
+            <div style={card}>
+              <div style={cardHeader}>
+                <p style={cardTitle}>{lang==="en"?"Profile picture":"Foto de perfil"}</p>
+              </div>
+              <div style={{ padding:"20px", display:"flex", alignItems:"center", gap:"20px" }}>
+                <div style={{ width:"80px", height:"80px", borderRadius:"50%",
+                  background:c.accentBg, overflow:"hidden", flexShrink:0,
+                  border:`2px solid ${c.border}` }}>
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="avatar"
+                      style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                  ) : (
+                    <div style={{ width:"100%", height:"100%", display:"flex",
+                      alignItems:"center", justifyContent:"center",
+                      fontSize:"28px", fontWeight:700, color:c.text }}>
+                      {artistName[0]?.toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <p style={{ ...base, fontSize:"14px", fontWeight:600, color:c.text, marginBottom:"4px" }}>{artistName}</p>
+                  <p style={{ ...base, fontSize:"12px", color:c.textMute, marginBottom:"12px" }}>{name}</p>
+                  <label style={{ display:"inline-flex", alignItems:"center", gap:"6px",
+                    padding:"7px 14px", borderRadius:"6px", cursor:"pointer",
+                    border:`1px solid ${c.border}`, background:c.white,
+                    fontSize:"13px", fontWeight:500, color:c.text, fontFamily:"system-ui" }}>
+                    {uploadingAvatar
+                      ? (lang==="en"?"Uploading...":"Subiendo...")
+                      : (lang==="en"?"Upload photo":"Subir foto")}
+                    <input type="file" accept="image/*" style={{ display:"none" }}
+                      disabled={uploadingAvatar}
+                      onChange={async e => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        setUploadingAvatar(true);
+                        const fd = new FormData();
+                        fd.append("file", file);
+                        const res = await fetch("/api/artists-portal/profile", { method:"PATCH", body:fd });
+                        if (res.ok) {
+                          const data = await res.json();
+                          setAvatarUrl(data.avatar_url);
+                        }
+                        setUploadingAvatar(false);
+                      }} />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Cambiar contraseña */}
+            <div style={card}>
+              <div style={cardHeader}>
+                <p style={cardTitle}>{lang==="en"?"Change password":"Cambiar contraseña"}</p>
+              </div>
+              <div style={{ padding:"20px", display:"flex", flexDirection:"column", gap:"14px" }}>
+                {[
+                  { label:lang==="en"?"Current password":"Contraseña actual", value:currentPass, set:setCurrentPass },
+                  { label:lang==="en"?"New password":"Nueva contraseña",     value:newPass,     set:setNewPass     },
+                  { label:lang==="en"?"Confirm password":"Confirmar nueva",   value:confirmPass, set:setConfirmPass },
+                ].map((f,i) => (
+                  <div key={i}>
+                    <label style={{ ...base, fontSize:"12px", fontWeight:500,
+                      color:c.textSub, display:"block", marginBottom:"6px" }}>
+                      {f.label}
+                    </label>
+                    <input type="password" value={f.value}
+                      onChange={e => f.set(e.target.value)}
+                      style={{ width:"100%", padding:"9px 12px",
+                        border:`1px solid ${c.border}`, borderRadius:"6px",
+                        fontFamily:"system-ui", fontSize:"13px", color:c.text,
+                        outline:"none", boxSizing:"border-box" as any }}
+                      onFocus={e => e.currentTarget.style.borderColor=c.accent}
+                      onBlur={e => e.currentTarget.style.borderColor=c.border} />
+                  </div>
+                ))}
+
+                {passMsg && (
+                  <div style={{ padding:"10px 14px", borderRadius:"6px",
+                    background:passMsg.ok?c.greenBg:c.redBg,
+                    border:`1px solid ${passMsg.ok?c.greenBorder:c.redBorder}` }}>
+                    <p style={{ ...base, fontSize:"13px", color:passMsg.ok?c.green:c.red }}>
+                      {passMsg.text}
+                    </p>
+                  </div>
+                )}
+
+                <button
+                  disabled={savingPass||!currentPass||!newPass||!confirmPass}
+                  onClick={async () => {
+                    if (newPass !== confirmPass) {
+                      setPassMsg({ ok:false, text:lang==="en"?"Passwords don't match":"Las contraseñas no coinciden" });
+                      return;
+                    }
+                    if (newPass.length < 6) {
+                      setPassMsg({ ok:false, text:lang==="en"?"Minimum 6 characters":"Mínimo 6 caracteres" });
+                      return;
+                    }
+                    setSavingPass(true);
+                    setPassMsg(null);
+                    const res = await fetch("/api/artists-portal/profile", {
+                      method:"POST", headers:{"Content-Type":"application/json"},
+                      body: JSON.stringify({ current_password:currentPass, new_password:newPass }),
+                    });
+                    if (res.ok) {
+                      setPassMsg({ ok:true, text:lang==="en"?"Password changed successfully":"Contraseña cambiada correctamente" });
+                      setCurrentPass(""); setNewPass(""); setConfirmPass("");
+                    } else {
+                      const data = await res.json();
+                      setPassMsg({ ok:false, text:data.error==="Wrong password"
+                        ? (lang==="en"?"Current password is incorrect":"La contraseña actual es incorrecta")
+                        : (lang==="en"?"Error changing password":"Error al cambiar la contraseña") });
+                    }
+                    setSavingPass(false);
+                  }}
+                  style={{ ...base, padding:"9px 20px", borderRadius:"6px", border:"none",
+                    background:c.accent, color:c.white, fontSize:"13px",
+                    fontWeight:600, cursor:"pointer", alignSelf:"flex-start",
+                    opacity:(savingPass||!currentPass||!newPass||!confirmPass)?0.5:1 }}>
+                  {savingPass
+                    ? (lang==="en"?"Saving...":"Guardando...")
+                    : (lang==="en"?"Change password":"Cambiar contraseña")}
+                </button>
+              </div>
+            </div>
+
+            {/* Info cuenta */}
+            <div style={{ ...card, padding:"20px", background:c.bg }}>
+              <p style={{ ...base, fontSize:"13px", color:c.textSub, lineHeight:1.7 }}>
+                {lang==="en"
+                  ? "For any changes to your email or payment details, contact us at "
+                  : "Para cambios en tu email o datos de pago, contacta con nosotros en "}
+                <a href="mailto:info@loyalfoxrecords.com"
+                  style={{ color:c.blue, fontWeight:500, textDecoration:"none" }}>
+                  info@loyalfoxrecords.com
+                </a>
+              </p>
             </div>
           </div>
         )}
