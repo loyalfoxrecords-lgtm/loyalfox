@@ -29,6 +29,7 @@ type Contract = {
 const c = {
   bg:"#f9fafb", white:"#ffffff", border:"#e5e7eb", borderLight:"#f3f4f6",
   text:"#111827", textSub:"#6b7280", textMute:"#9ca3af", accent:"#111827",
+  accentBg:"#f3f4f6",
   green:"#16a34a", greenBg:"#f0fdf4", greenBorder:"#bbf7d0",
   blue:"#2563eb", blueBg:"#eff6ff", blueBorder:"#bfdbfe",
   red:"#dc2626", redBg:"#fef2f2", redBorder:"#fecaca",
