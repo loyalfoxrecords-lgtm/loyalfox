@@ -5,10 +5,10 @@ import { css, hs } from "./styles";
 
 type Playlist = {
   id: string; name: string; description: string;
-  image_url: string; slug: string;
+  image_url: string; slug: string; url_spotify: string;
 };
 
-const empty = { name:"", description:"", image_url:"", slug:"" };
+const empty = { name:"", description:"", image_url:"", slug:"", url_spotify:"" };
 
 function toSlug(s: string) {
   return s.toLowerCase()
@@ -16,7 +16,6 @@ function toSlug(s: string) {
     .replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 }
 
-// ─── FORMULARIO fuera del componente principal ───
 function PlaylistForm({ data, onChange, onUpload, uploading }: {
   data: typeof empty;
   onChange: (d: typeof empty) => void;
@@ -39,6 +38,12 @@ function PlaylistForm({ data, onChange, onUpload, uploading }: {
             onChange={e => onChange({...data, slug:e.target.value})}
             style={hs.input} />
         </div>
+      </div>
+      <div>
+        <label style={hs.formLabel}>URL de Spotify</label>
+        <input placeholder="https://open.spotify.com/playlist/..." value={data.url_spotify}
+          onChange={e => onChange({...data, url_spotify:e.target.value})}
+          style={hs.input} />
       </div>
       <div>
         <label style={hs.formLabel}>Descripción</label>
@@ -158,7 +163,7 @@ export default function AdminPlaylists() {
         <table style={{ width:"100%", borderCollapse:"collapse" }}>
           <thead>
             <tr style={{ background:css.bg }}>
-              {["","Nombre","Descripción",""].map((h,i) => (
+              {["","Nombre","Descripción","Spotify",""].map((h,i) => (
                 <th key={i} style={{ padding:"10px 16px", textAlign:"left",
                   fontSize:"11px", fontWeight:500, color:css.textMute,
                   fontFamily:"system-ui", borderBottom:`1px solid ${css.border}` }}>
@@ -190,17 +195,33 @@ export default function AdminPlaylists() {
                     <p style={{ fontSize:"11px", color:css.textMute, fontFamily:"system-ui" }}>/{pl.slug}</p>
                   </td>
                   <td style={{ padding:"10px 16px", fontSize:"13px", color:css.textSub,
-                    fontFamily:"system-ui", maxWidth:"300px", overflow:"hidden",
+                    fontFamily:"system-ui", maxWidth:"200px", overflow:"hidden",
                     textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                     {pl.description || "—"}
+                  </td>
+                  <td style={{ padding:"10px 16px" }}>
+                    {pl.url_spotify ? (
+                      <a href={pl.url_spotify} target="_blank" rel="noreferrer"
+                        style={{ fontSize:"11px", color:css.green, fontFamily:"system-ui",
+                          textDecoration:"none", padding:"2px 8px",
+                          background:css.greenBg, borderRadius:"4px",
+                          border:`1px solid ${css.greenBorder}` }}>
+                        ▶ Spotify
+                      </a>
+                    ) : (
+                      <span style={{ fontSize:"12px", color:css.textMute, fontFamily:"system-ui" }}>—</span>
+                    )}
                   </td>
                   <td style={{ padding:"10px 16px" }}>
                     <div style={{ display:"flex", gap:"6px" }}>
                       <button onClick={() => {
                         if(editingId===pl.id){ setEditingId(null); return; }
                         setEditingId(pl.id);
-                        setEditForm({ name:pl.name, description:pl.description||"",
-                          image_url:pl.image_url||"", slug:pl.slug||"" });
+                        setEditForm({
+                          name:pl.name, description:pl.description||"",
+                          image_url:pl.image_url||"", slug:pl.slug||"",
+                          url_spotify:pl.url_spotify||"",
+                        });
                       }} style={hs.btnSmall}>
                         {editingId===pl.id?"Cancelar":"Editar"}
                       </button>
@@ -212,7 +233,7 @@ export default function AdminPlaylists() {
                 </tr>
                 {editingId===pl.id && (
                   <tr key={`edit-${pl.id}`}>
-                    <td colSpan={4} style={{ padding:"20px 24px",
+                    <td colSpan={5} style={{ padding:"20px 24px",
                       background:css.blueBg, borderBottom:`1px solid ${css.border}` }}>
                       <PlaylistForm
                         data={editForm}
