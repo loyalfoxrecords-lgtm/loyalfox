@@ -16,9 +16,23 @@ export default function Contact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.name || !form.email || !form.message) return;
     setStatus("sending");
-    await new Promise(r => setTimeout(r, 1200));
-    setStatus("ok");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(form),
+      });
+      if (res.ok) {
+        setStatus("ok");
+        setForm({ name:"", email:"", message:"" });
+      } else {
+        setStatus("error");
+      }
+    } catch {
+      setStatus("error");
+    }
   };
 
   const inputStyle = {
@@ -37,21 +51,83 @@ export default function Contact() {
   };
 
   const contactInfo = [
-    { label:"Email general",  value:"info@loyalfoxrecords.com"  },
-    { label:"Demos",          value:"demos@loyalfoxrecords.com" },
-    { label:"Instagram",      value:"@loyalfoxrecords"          },
-    { label:t.contact?.fieldMotivo||"Localización", value:"España" },
+    { label:t.contact?.infoEmail||"Email general",  value:"contact@loyalfoxrecords.com" },
+    { label:t.contact?.infoDemos||"Demos",          value:"demos@loyalfoxrecords.com"   },
+    { label:t.contact?.infoInstagram||"Instagram",  value:"@loyalfoxrecords"            },
+    { label:t.contact?.infoLocation||"Localización",value:"España"                      },
   ];
 
   const formFields = [
-    { id:"name",  label:t.contact?.fieldName||"Nombre",  type:"text",  placeholder:t.contact?.fieldNamePh||"Tu nombre artístico" },
+    { id:"name",  label:t.contact?.fieldName||"Nombre",  type:"text",  placeholder:t.contact?.fieldNamePh||"Tu nombre" },
     { id:"email", label:t.contact?.fieldEmail||"Email",  type:"email", placeholder:"tu@email.com" },
   ];
+
+  const SentState = () => (
+    <div style={{ padding:"60px 0" }}>
+      <div style={{ width:"48px", height:"48px", borderRadius:"50%",
+        background:"#a8e63d", display:"flex", alignItems:"center",
+        justifyContent:"center", marginBottom:"24px" }}>
+        <span style={{ fontSize:"22px", color:"#080808" }}>✓</span>
+      </div>
+      <p style={{ fontFamily:"var(--font-display)", fontSize:"36px",
+        letterSpacing:"1px", color:"var(--white)", marginBottom:"12px" }}>
+        {t.contact?.sent||"✓ Enviado"}
+      </p>
+      <p style={{ fontFamily:"var(--font-mono)", fontSize:"11px",
+        lineHeight:1.8, color:"rgba(240,240,240,0.4)" }}>
+        {t.contact?.sentSub||"Te contestaremos en los próximos días. Gracias por tu interés."}
+      </p>
+    </div>
+  );
+
+  const FormBody = ({ gap }: { gap: string }) => (
+    <form onSubmit={handleSubmit} style={{ display:"flex", flexDirection:"column", gap }}>
+      {formFields.map(field => (
+        <div key={field.id}>
+          <label style={labelStyle}>{field.label}</label>
+          <input type={field.type} placeholder={field.placeholder}
+            value={form[field.id as keyof typeof form]}
+            onChange={e => setForm({...form,[field.id]:e.target.value})}
+            required style={inputStyle}
+            onFocus={e => e.currentTarget.style.borderBottomColor="#a8e63d"}
+            onBlur={e => e.currentTarget.style.borderBottomColor="rgba(255,255,255,0.1)"} />
+        </div>
+      ))}
+      <div>
+        <label style={labelStyle}>{t.contact?.fieldMsg||"Mensaje"}</label>
+        <textarea placeholder={t.contact?.fieldMsgPh||"Cuéntanos sobre tu música, tu estilo, tus referencias..."}
+          value={form.message} onChange={e => setForm({...form,message:e.target.value})}
+          required rows={isMobile?4:5}
+          style={{ ...inputStyle, resize:"none" }}
+          onFocus={e => e.currentTarget.style.borderBottomColor="#a8e63d"}
+          onBlur={e => e.currentTarget.style.borderBottomColor="rgba(255,255,255,0.1)"} />
+      </div>
+      {status==="error" && (
+        <p style={{ fontFamily:"var(--font-mono)", fontSize:"11px",
+          color:"#ff5c1a", letterSpacing:"1px" }}>
+          Error al enviar. Inténtalo de nuevo.
+        </p>
+      )}
+      <button type="submit" disabled={status==="sending"}
+        style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
+          letterSpacing:"3px", textTransform:"uppercase",
+          padding: isMobile?"16px":"18px 48px",
+          background:"#a8e63d", color:"#080808",
+          border:"none", cursor:status==="sending"?"not-allowed":"pointer",
+          opacity:status==="sending"?0.7:1, fontWeight:700,
+          alignSelf:"flex-start", transition:"all .3s" }}
+        onMouseEnter={e => { if(status!=="sending"){ (e.currentTarget as HTMLElement).style.background="#c5f560"; (e.currentTarget as HTMLElement).style.transform="translateY(-2px)"; }}}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background="#a8e63d"; (e.currentTarget as HTMLElement).style.transform="none"; }}>
+        {status==="sending"
+          ? t.contact?.sending||"Enviando..."
+          : t.contact?.send||"Enviar mensaje →"}
+      </button>
+    </form>
+  );
 
   /* ── MÓVIL ── */
   if (isMobile) return (
     <section id="contact" style={{ background:"var(--black)" }}>
-      {/* Bloque verde */}
       <div style={{ background:"#a8e63d", padding:"48px 20px" }}>
         <span style={{ fontFamily:"var(--font-mono)", fontSize:"9px",
           letterSpacing:"3px", textTransform:"uppercase",
@@ -71,7 +147,6 @@ export default function Contact() {
         </p>
       </div>
 
-      {/* Info */}
       <div style={{ padding:"40px 20px", borderBottom:"1px solid rgba(255,255,255,0.05)" }}>
         {contactInfo.map(item => (
           <div key={item.label} style={{ paddingBottom:"20px", marginBottom:"20px",
@@ -85,58 +160,8 @@ export default function Contact() {
         ))}
       </div>
 
-      {/* Formulario móvil */}
       <div style={{ padding:"40px 20px" }}>
-        {status==="ok" ? (
-          <div style={{ padding:"40px 0" }}>
-            <div style={{ width:"40px", height:"40px", borderRadius:"50%",
-              background:"#a8e63d", display:"flex", alignItems:"center",
-              justifyContent:"center", marginBottom:"16px" }}>
-              <span style={{ fontSize:"18px", color:"#080808" }}>✓</span>
-            </div>
-            <p style={{ fontFamily:"var(--font-display)", fontSize:"28px",
-              letterSpacing:"1px", color:"var(--white)", marginBottom:"8px" }}>
-              {t.contact?.sent||"✓ Enviado"}
-            </p>
-            <p style={{ fontFamily:"var(--font-mono)", fontSize:"11px",
-              lineHeight:1.8, color:"rgba(240,240,240,0.4)" }}>
-              Te contestaremos en los próximos días.
-            </p>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} style={{ display:"flex", flexDirection:"column", gap:"32px" }}>
-            {formFields.map(field => (
-              <div key={field.id}>
-                <label style={labelStyle}>{field.label}</label>
-                <input type={field.type} placeholder={field.placeholder}
-                  value={form[field.id as keyof typeof form]}
-                  onChange={e => setForm({...form,[field.id]:e.target.value})}
-                  required style={inputStyle}
-                  onFocus={e => e.currentTarget.style.borderBottomColor="#a8e63d"}
-                  onBlur={e => e.currentTarget.style.borderBottomColor="rgba(255,255,255,0.1)"} />
-              </div>
-            ))}
-            <div>
-              <label style={labelStyle}>{t.contact?.fieldMsg||"Mensaje"}</label>
-              <textarea placeholder={t.contact?.fieldMsgPh||"Cuéntanos sobre tu música..."}
-                value={form.message} onChange={e => setForm({...form,message:e.target.value})}
-                required rows={4}
-                style={{ ...inputStyle, resize:"none" }}
-                onFocus={e => e.currentTarget.style.borderBottomColor="#a8e63d"}
-                onBlur={e => e.currentTarget.style.borderBottomColor="rgba(255,255,255,0.1)"} />
-            </div>
-            <button type="submit" disabled={status==="sending"}
-              style={{ padding:"16px", background:"#a8e63d", color:"#080808",
-                border:"none", cursor:status==="sending"?"not-allowed":"pointer",
-                opacity:status==="sending"?0.7:1, fontWeight:700,
-                fontFamily:"var(--font-mono)", fontSize:"11px",
-                letterSpacing:"3px", textTransform:"uppercase" }}>
-              {status==="sending"
-                ? t.contact?.sending||"Enviando..."
-                : t.contact?.send||"Enviar mensaje →"}
-            </button>
-          </form>
-        )}
+        {status==="ok" ? <SentState /> : <FormBody gap="32px" />}
       </div>
     </section>
   );
@@ -144,7 +169,6 @@ export default function Contact() {
   /* ── DESKTOP ── */
   return (
     <section ref={ref} id="contact" style={{ background:"var(--black)", position:"relative", overflow:"hidden" }}>
-      {/* Bloque verde */}
       <div style={{ background:"#a8e63d", padding:"80px 56px",
         display:"grid", gridTemplateColumns:"1fr 1fr", gap:"80px", alignItems:"center" }}>
         <motion.div style={{ y:titleY, opacity:titleO }}>
@@ -169,11 +193,8 @@ export default function Contact() {
         </motion.p>
       </div>
 
-      {/* Cuerpo */}
       <div style={{ padding:"100px 56px", display:"grid",
         gridTemplateColumns:"1fr 1fr", gap:"100px", alignItems:"start" }}>
-
-        {/* Info */}
         <motion.div initial={{ opacity:0, x:-30 }} whileInView={{ opacity:1, x:0 }}
           viewport={{ once:true }} transition={{ duration:0.8 }}>
           <div style={{ display:"flex", flexDirection:"column", gap:"40px" }}>
@@ -190,62 +211,14 @@ export default function Contact() {
           </div>
         </motion.div>
 
-        {/* Formulario */}
         <motion.div initial={{ opacity:0, x:30 }} whileInView={{ opacity:1, x:0 }}
           viewport={{ once:true }} transition={{ duration:0.8, delay:0.1 }}>
           {status==="ok" ? (
-            <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}
-              style={{ padding:"60px 0" }}>
-              <div style={{ width:"48px", height:"48px", borderRadius:"50%",
-                background:"#a8e63d", display:"flex", alignItems:"center",
-                justifyContent:"center", marginBottom:"24px" }}>
-                <span style={{ fontSize:"22px", color:"#080808" }}>✓</span>
-              </div>
-              <p style={{ fontFamily:"var(--font-display)", fontSize:"36px",
-                letterSpacing:"1px", color:"var(--white)", marginBottom:"12px" }}>
-                {t.contact?.sent||"✓ Enviado"}
-              </p>
-              <p style={{ fontFamily:"var(--font-mono)", fontSize:"11px",
-                lineHeight:1.8, color:"rgba(240,240,240,0.4)" }}>
-                Te contestaremos en los próximos días. Gracias por tu interés.
-              </p>
+            <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }}>
+              <SentState />
             </motion.div>
           ) : (
-            <form onSubmit={handleSubmit} style={{ display:"flex", flexDirection:"column", gap:"40px" }}>
-              {formFields.map(field => (
-                <div key={field.id}>
-                  <label style={labelStyle}>{field.label}</label>
-                  <input type={field.type} placeholder={field.placeholder}
-                    value={form[field.id as keyof typeof form]}
-                    onChange={e => setForm({...form,[field.id]:e.target.value})}
-                    required style={inputStyle}
-                    onFocus={e => e.currentTarget.style.borderBottomColor="#a8e63d"}
-                    onBlur={e => e.currentTarget.style.borderBottomColor="rgba(255,255,255,0.1)"} />
-                </div>
-              ))}
-              <div>
-                <label style={labelStyle}>{t.contact?.fieldMsg||"Mensaje"}</label>
-                <textarea placeholder={t.contact?.fieldMsgPh||"Cuéntanos sobre tu música, tu estilo, tus referencias..."}
-                  value={form.message} onChange={e => setForm({...form,message:e.target.value})}
-                  required rows={5}
-                  style={{ ...inputStyle, resize:"none" }}
-                  onFocus={e => e.currentTarget.style.borderBottomColor="#a8e63d"}
-                  onBlur={e => e.currentTarget.style.borderBottomColor="rgba(255,255,255,0.1)"} />
-              </div>
-              <button type="submit" disabled={status==="sending"}
-                style={{ fontFamily:"var(--font-mono)", fontSize:"10px",
-                  letterSpacing:"3px", textTransform:"uppercase",
-                  padding:"18px 48px", background:"#a8e63d", color:"#080808",
-                  border:"none", cursor:status==="sending"?"not-allowed":"pointer",
-                  opacity:status==="sending"?0.7:1, fontWeight:700,
-                  alignSelf:"flex-start", transition:"all .3s" }}
-                onMouseEnter={e => { if(status!=="sending"){ (e.currentTarget as HTMLElement).style.background="#c5f560"; (e.currentTarget as HTMLElement).style.transform="translateY(-2px)"; }}}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background="#a8e63d"; (e.currentTarget as HTMLElement).style.transform="none"; }}>
-                {status==="sending"
-                  ? t.contact?.sending||"Enviando..."
-                  : t.contact?.send||"Enviar mensaje →"}
-              </button>
-            </form>
+            <FormBody gap="40px" />
           )}
         </motion.div>
       </div>
