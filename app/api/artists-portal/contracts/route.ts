@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { jwtVerify } from "jose";
 import { createClient } from "@supabase/supabase-js";
-import jwt from "jsonwebtoken";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,8 +11,11 @@ const supabase = createClient(
 async function getArtist() {
   const token = (await cookies()).get("artist_token")?.value;
   if (!token) return null;
-  try { return jwt.verify(token, process.env.ARTISTS_JWT_SECRET!) as any; }
-  catch { return null; }
+  try {
+    const secret = new TextEncoder().encode(process.env.ARTISTS_JWT_SECRET!);
+    const { payload } = await jwtVerify(token, secret);
+    return payload as any;
+  } catch { return null; }
 }
 
 export async function GET() {

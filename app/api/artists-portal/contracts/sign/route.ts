@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { jwtVerify } from "jose";
 import { createClient } from "@supabase/supabase-js";
-import jwt from "jsonwebtoken";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 const supabase = createClient(
@@ -12,8 +12,11 @@ const supabase = createClient(
 async function getArtist() {
   const token = (await cookies()).get("artist_token")?.value;
   if (!token) return null;
-  try { return jwt.verify(token, process.env.ARTISTS_JWT_SECRET!) as any; }
-  catch { return null; }
+  try {
+    const secret = new TextEncoder().encode(process.env.ARTISTS_JWT_SECRET!);
+    const { payload } = await jwtVerify(token, secret);
+    return payload as any;
+  } catch { return null; }
 }
 
 export async function POST(req: NextRequest) {
@@ -63,7 +66,6 @@ export async function POST(req: NextRequest) {
     day:"numeric", month:"long", year:"numeric",
   });
 
-  // Línea separadora
   lastPage.drawLine({
     start: { x: width - 240, y: 145 },
     end:   { x: width - 30,  y: 145 },
@@ -71,12 +73,10 @@ export async function POST(req: NextRequest) {
     color: rgb(0.7, 0.7, 0.7),
   });
 
-  // Imagen de firma
   lastPage.drawImage(sigImage, {
     x: width - 240, y: 70, width: 200, height: 65,
   });
 
-  // Texto debajo de la firma
   lastPage.drawText(`Firmado por: ${displayName}`, {
     x: width - 240, y: 56, size: 8, font, color: rgb(0.2, 0.2, 0.2),
   });
