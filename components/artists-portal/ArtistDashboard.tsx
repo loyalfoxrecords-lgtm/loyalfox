@@ -1088,7 +1088,8 @@ export default function ArtistDashboard() {
                   <p style={{ ...base, fontSize:"12px", color:c.textMute, marginBottom:"12px" }}>{name}</p>
                   <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
                     <label style={{ display:"inline-flex", alignItems:"center", gap:"6px",
-                      padding:"7px 14px", borderRadius:"6px", cursor:uploadingAvatar?"not-allowed":"pointer",
+                      padding:"7px 14px", borderRadius:"6px",
+                      cursor:uploadingAvatar?"not-allowed":"pointer",
                       border:`1px solid ${c.border}`, background:c.white,
                       fontSize:"13px", fontWeight:500, color:c.text, fontFamily:"system-ui",
                       opacity:uploadingAvatar?0.6:1 }}>
@@ -1100,16 +1101,32 @@ export default function ArtistDashboard() {
                         onChange={async e => {
                           const file = e.target.files?.[0];
                           if (!file) return;
+                          if (file.size > 5*1024*1024) {
+                            alert(lang==="en"?"Max file size is 5MB":"El archivo no puede superar 5MB");
+                            return;
+                          }
                           setUploadingAvatar(true);
-                          const fd = new FormData();
-                          fd.append("file", file);
                           try {
-                            const res = await fetch("/api/artists-portal/profile", { method:"PATCH", body:fd });
+                            const { createClient } = await import("@supabase/supabase-js");
+                            const sb = createClient(
+                              process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                              process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                            );
+                            const ext  = file.name.split(".").pop();
+                            const path = `avatar-${Date.now()}.${ext}`;
+                            const { error: uploadErr } = await sb.storage
+                              .from("artists").upload(path, file, { upsert:true });
+                            if (uploadErr) throw uploadErr;
+                            const { data: urlData } = sb.storage.from("artists").getPublicUrl(path);
+                            const res = await fetch("/api/artists-portal/profile", {
+                              method:"PATCH",
+                              headers:{"Content-Type":"application/json"},
+                              body: JSON.stringify({ avatar_url: urlData.publicUrl }),
+                            });
                             if (res.ok) {
-                              const data = await res.json();
-                              setAvatarUrl(data.avatar_url + "?t=" + Date.now());
+                              setAvatarUrl(urlData.publicUrl + "?t=" + Date.now());
                             } else {
-                              alert(lang==="en"?"Error uploading photo":"Error al subir la foto");
+                              alert(lang==="en"?"Error saving photo":"Error al guardar la foto");
                             }
                           } catch {
                             alert(lang==="en"?"Error uploading photo":"Error al subir la foto");
@@ -1118,7 +1135,9 @@ export default function ArtistDashboard() {
                         }} />
                     </label>
                     {avatarUrl && !uploadingAvatar && (
-                      <span style={{ ...base, fontSize:"12px", color:c.green }}>✓ {lang==="en"?"Saved":"Guardado"}</span>
+                      <span style={{ ...base, fontSize:"12px", color:c.green }}>
+                        ✓ {lang==="en"?"Saved":"Guardado"}
+                      </span>
                     )}
                   </div>
                   <p style={{ ...base, fontSize:"11px", color:c.textMute, marginTop:"8px" }}>

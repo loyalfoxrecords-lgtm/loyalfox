@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { createClient } from "@supabase/supabase-js";
+import crypto from "crypto";
 
 export const runtime = "nodejs";
 
@@ -20,11 +21,6 @@ async function getArtist() {
   } catch { return null; }
 }
 
-function hashPassword(password: string): string {
-  const crypto = require("crypto");
-  return crypto.createHash("sha256").update(password).digest("hex");
-}
-
 // Cambiar contraseña
 export async function POST(req: NextRequest) {
   const artist = await getArtist();
@@ -34,7 +30,7 @@ export async function POST(req: NextRequest) {
   if (!current_password || !new_password) return NextResponse.json({ error:"Missing fields" }, { status:400 });
   if (new_password.length < 6) return NextResponse.json({ error:"Password too short" }, { status:400 });
 
-  const hashCurrent = hashPassword(current_password);
+  const hashCurrent = crypto.createHash("sha256").update(current_password).digest("hex");
 
   const { data: account } = await supabase
     .from("artist_accounts")
@@ -46,10 +42,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error:"Wrong password" }, { status:400 });
   }
 
-  const hashNew = hashPassword(new_password);
+  const hashNew = crypto.createHash("sha256").update(new_password).digest("hex");
 
   const { error } = await supabase.from("artist_accounts")
-    .update({ password_hash: hashNew, must_change_password: false })
+    .update({ password_hash: hashNew })
     .eq("id", artist.id);
 
   if (error) return NextResponse.json({ error: error.message }, { status:500 });
@@ -57,32 +53,19 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true });
 }
 
-// Subir avatar
+// Guardar URL de avatar (la subida se hace desde el frontend directamente a Supabase)
 export async function PATCH(req: NextRequest) {
   const artist = await getArtist();
   if (!artist) return NextResponse.json({ error:"Unauthorized" }, { status:401 });
 
-  const formData = await req.formData();
-  const file = formData.get("file") as File;
-  if (!file) return NextResponse.json({ error:"No file" }, { status:400 });
+  const { avatar_url } = await req.json();
+  if (!avatar_url) return NextResponse.json({ error:"No avatar_url" }, { status:400 });
 
-  const ext    = file.name.split(".").pop();
-  const path   = `avatar-${artist.id}-${Date.now()}.${ext}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-
-  const { error } = await supabase.storage
-    .from("artists")
-    .upload(path, buffer, { contentType: file.type, upsert: true });
+  const { error } = await supabase.from("artist_accounts")
+    .update({ avatar_url })
+    .eq("id", artist.id);
 
   if (error) return NextResponse.json({ error: error.message }, { status:500 });
 
-  const { data } = supabase.storage.from("artists").getPublicUrl(path);
-
-  const { error: updateError } = await supabase.from("artist_accounts")
-    .update({ avatar_url: data.publicUrl })
-    .eq("id", artist.id);
-
-  if (updateError) return NextResponse.json({ error: updateError.message }, { status:500 });
-
-  return NextResponse.json({ ok: true, avatar_url: data.publicUrl });
+  return NextResponse.json({ ok: true, avatar_url });
 }
