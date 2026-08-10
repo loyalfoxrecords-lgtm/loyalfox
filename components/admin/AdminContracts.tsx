@@ -8,19 +8,18 @@ type Contract = {
   id:string; artist_account_id:string; artist_name:string;
   title:string; description:string; pdf_url:string;
   status:"pending"|"signed"; signature_url:string|null;
-  signed_at:string|null; created_at:string;
+  signed_at:string|null; created_at:string; signed_pdf_url:string|null;
 };
 
 export default function AdminContracts() {
-  const [contracts, setContracts] = useState<Contract[]>([]);
-  const [artists, setArtists]     = useState<Artist[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [form, setForm]           = useState({
-    artist_account_id:"", title:"", description:"",
-  });
-  const [file, setFile]           = useState<File|null>(null);
-  const [search, setSearch]       = useState("");
+  const [contracts, setContracts]   = useState<Contract[]>([]);
+  const [artists, setArtists]       = useState<Artist[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [uploading, setUploading]   = useState(false);
+  const [regenerating, setRegenerating] = useState<string|null>(null);
+  const [form, setForm]             = useState({ artist_account_id:"", title:"", description:"" });
+  const [file, setFile]             = useState<File|null>(null);
+  const [search, setSearch]         = useState("");
 
   const load = async () => {
     const [cRes, aRes] = await Promise.all([
@@ -47,13 +46,37 @@ export default function AdminContracts() {
     fd.append("artist_name", selectedArtist?.artist_name||"");
     fd.append("title", form.title);
     fd.append("description", form.description);
-
     const res = await fetch("/api/admin/contracts", { method:"POST", body:fd });
     if (!res.ok) { alert("Error al subir el contrato"); setUploading(false); return; }
     setForm({ artist_account_id:"", title:"", description:"" });
     setFile(null);
     await load();
     setUploading(false);
+  };
+
+  // Regenerar PDF firmado para contratos ya firmados sin signed_pdf_url
+  const regeneratePdf = async (contract: Contract) => {
+    if (!contract.signature_url || !contract.pdf_url) {
+      alert("Este contrato no tiene firma guardada"); return;
+    }
+    setRegenerating(contract.id);
+    try {
+      const res = await fetch("/api/admin/contracts/regenerate", {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({ contract_id: contract.id }),
+      });
+      if (res.ok) {
+        await load();
+        alert("✓ PDF firmado regenerado correctamente");
+      } else {
+        const d = await res.json();
+        alert("Error: " + d.error);
+      }
+    } catch {
+      alert("Error al regenerar el PDF");
+    }
+    setRegenerating(null);
   };
 
   const deleteContract = async (id:string) => {
@@ -215,12 +238,34 @@ export default function AdminContracts() {
                   )}
                 </td>
                 <td style={{ padding:"12px 16px" }}>
-                  <div style={{ display:"flex", gap:"6px" }}>
+                  <div style={{ display:"flex", gap:"6px", flexWrap:"wrap" }}>
                     <a href={c.pdf_url} target="_blank" rel="noreferrer"
                       style={{ ...hs.btnSmall, textDecoration:"none",
                         display:"inline-flex", alignItems:"center" }}>
                       Ver PDF
                     </a>
+                    {c.status==="signed" && c.signed_pdf_url && (
+                      <a href={c.signed_pdf_url} target="_blank" rel="noreferrer"
+                        style={{ fontFamily:"system-ui", fontSize:"12px", fontWeight:500,
+                          padding:"4px 10px", borderRadius:"6px", textDecoration:"none",
+                          color:css.green, background:css.greenBg,
+                          border:`1px solid ${css.greenBorder}`,
+                          display:"inline-flex", alignItems:"center" }}>
+                        ✓ PDF firmado
+                      </a>
+                    )}
+                    {c.status==="signed" && !c.signed_pdf_url && c.signature_url && (
+                      <button
+                        onClick={() => regeneratePdf(c)}
+                        disabled={regenerating===c.id}
+                        style={{ fontFamily:"system-ui", fontSize:"12px", fontWeight:500,
+                          padding:"4px 10px", borderRadius:"6px", cursor:"pointer",
+                          color:css.blue, background:css.blueBg,
+                          border:`1px solid ${css.blueBorder}`,
+                          opacity:regenerating===c.id?0.6:1 }}>
+                        {regenerating===c.id ? "Generando..." : "↻ Generar PDF firmado"}
+                      </button>
+                    )}
                     <button onClick={() => deleteContract(c.id)} style={hs.btnDanger}>
                       Eliminar
                     </button>
