@@ -5,6 +5,7 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
   Tooltip, ResponsiveContainer, Cell
 } from "recharts";
+import ArtistSmartLinks from "./ArtistSmartLinks";
 
 type Royalty = {
   id: string; month: string; total_streams: number;
@@ -49,7 +50,7 @@ const i18n = {
     kpi3:"Ya cobrado", kpi3sub:"Pagado",
     kpi4:"Pendiente de cobro", kpi4sub:"Acumulando",
     tabOverview:"Resumen", tabMonthly:"Por mes", tabTracks:"Tracks",
-    tabPayments:"Pagos", tabFaq:"FAQ", tabContracts:"Contratos", tabChat:"Mensajes", tabProfile:"Mi perfil",
+    tabPayments:"Pagos", tabFaq:"FAQ", tabContracts:"Contratos", tabChat:"Mensajes", tabProfile:"Mi perfil", tabSmartLinks:"Smart Links",
     streamEvolution:"Evolución de streams", revenueByMonth:"Ingresos por mes (USD)",
     topTracks:"Top tracks", byPlatform:"Por plataforma",
     noData:"Sin datos", noDataFilter:"Sin datos para este filtro",
@@ -102,7 +103,7 @@ const i18n = {
     kpi3:"Already paid", kpi3sub:"Transferred",
     kpi4:"Pending payment", kpi4sub:"Accumulating",
     tabOverview:"Overview", tabMonthly:"By month", tabTracks:"Tracks",
-    tabPayments:"Payments", tabFaq:"FAQ", tabContracts:"Contracts", tabChat:"Messages", tabProfile:"My profile",
+    tabPayments:"Payments", tabFaq:"FAQ", tabContracts:"Contracts", tabChat:"Messages", tabProfile:"My profile", tabSmartLinks:"Smart Links",
     streamEvolution:"Stream evolution", revenueByMonth:"Revenue by month (USD)",
     topTracks:"Top tracks", byPlatform:"By platform",
     noData:"No data yet", noDataFilter:"No data for this filter",
@@ -276,7 +277,7 @@ export default function ArtistDashboard() {
   const [passMsg, setPassMsg]           = useState<{ok:boolean; text:string}|null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  const [activeTab, setActiveTab]     = useState<"overview"|"monthly"|"tracks"|"payments"|"faq"|"contracts"|"chat"|"profile">("overview");
+  const [activeTab, setActiveTab]     = useState<"overview"|"monthly"|"tracks"|"payments"|"faq"|"contracts"|"chat"|"profile"|"smartlinks">("overview");
   const [activeMonth, setActiveMonth] = useState<string|null>(null);
   const [activeStore, setActiveStore] = useState<string|null>(null);
   const [selectedTrack, setSelectedTrack] = useState<string|null>(null);
@@ -531,14 +532,15 @@ export default function ArtistDashboard() {
 
         {/* TABS */}
         <div style={{ display:"flex", gap:"0", marginBottom:"24px", borderBottom:`1px solid ${c.border}`, flexWrap:"wrap" }}>
-          {tabBtn("overview",  t.tabOverview)}
-          {tabBtn("monthly",   t.tabMonthly)}
-          {tabBtn("tracks",    t.tabTracks)}
-          {tabBtn("payments",  t.tabPayments)}
-          {tabBtn("contracts", t.tabContracts, pendingContracts)}
-          {tabBtn("chat",      t.tabChat, unreadCount)}
-          {tabBtn("faq",       t.tabFaq)}
-          {tabBtn("profile",   t.tabProfile)}
+          {tabBtn("overview",    t.tabOverview)}
+          {tabBtn("monthly",     t.tabMonthly)}
+          {tabBtn("tracks",      t.tabTracks)}
+          {tabBtn("payments",    t.tabPayments)}
+          {tabBtn("contracts",   t.tabContracts, pendingContracts)}
+          {tabBtn("smartlinks",  t.tabSmartLinks)}
+          {tabBtn("chat",        t.tabChat, unreadCount)}
+          {tabBtn("faq",         t.tabFaq)}
+          {tabBtn("profile",     t.tabProfile)}
         </div>
 
         {/* OVERVIEW */}
@@ -1199,6 +1201,13 @@ export default function ArtistDashboard() {
                 </a>
               </p>
             </div>
+          </div>
+        )}
+
+        {/* SMART LINKS */}
+        {activeTab==="smartlinks" && (
+          <div style={{ maxWidth:"760px" }}>
+            <ArtistSmartLinks artistName={artistName} lang={lang} />
           </div>
         )}
 
