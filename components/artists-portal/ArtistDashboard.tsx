@@ -1086,29 +1086,44 @@ export default function ArtistDashboard() {
                 <div>
                   <p style={{ ...base, fontSize:"14px", fontWeight:600, color:c.text, marginBottom:"4px" }}>{artistName}</p>
                   <p style={{ ...base, fontSize:"12px", color:c.textMute, marginBottom:"12px" }}>{name}</p>
-                  <label style={{ display:"inline-flex", alignItems:"center", gap:"6px",
-                    padding:"7px 14px", borderRadius:"6px", cursor:"pointer",
-                    border:`1px solid ${c.border}`, background:c.white,
-                    fontSize:"13px", fontWeight:500, color:c.text, fontFamily:"system-ui" }}>
-                    {uploadingAvatar
-                      ? (lang==="en"?"Uploading...":"Subiendo...")
-                      : (lang==="en"?"Upload photo":"Subir foto")}
-                    <input type="file" accept="image/*" style={{ display:"none" }}
-                      disabled={uploadingAvatar}
-                      onChange={async e => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        setUploadingAvatar(true);
-                        const fd = new FormData();
-                        fd.append("file", file);
-                        const res = await fetch("/api/artists-portal/profile", { method:"PATCH", body:fd });
-                        if (res.ok) {
-                          const data = await res.json();
-                          setAvatarUrl(data.avatar_url);
-                        }
-                        setUploadingAvatar(false);
-                      }} />
-                  </label>
+                  <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+                    <label style={{ display:"inline-flex", alignItems:"center", gap:"6px",
+                      padding:"7px 14px", borderRadius:"6px", cursor:uploadingAvatar?"not-allowed":"pointer",
+                      border:`1px solid ${c.border}`, background:c.white,
+                      fontSize:"13px", fontWeight:500, color:c.text, fontFamily:"system-ui",
+                      opacity:uploadingAvatar?0.6:1 }}>
+                      {uploadingAvatar
+                        ? (lang==="en"?"Uploading...":"Subiendo...")
+                        : (lang==="en"?"Upload photo":"Subir foto")}
+                      <input type="file" accept="image/*" style={{ display:"none" }}
+                        disabled={uploadingAvatar}
+                        onChange={async e => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setUploadingAvatar(true);
+                          const fd = new FormData();
+                          fd.append("file", file);
+                          try {
+                            const res = await fetch("/api/artists-portal/profile", { method:"PATCH", body:fd });
+                            if (res.ok) {
+                              const data = await res.json();
+                              setAvatarUrl(data.avatar_url + "?t=" + Date.now());
+                            } else {
+                              alert(lang==="en"?"Error uploading photo":"Error al subir la foto");
+                            }
+                          } catch {
+                            alert(lang==="en"?"Error uploading photo":"Error al subir la foto");
+                          }
+                          setUploadingAvatar(false);
+                        }} />
+                    </label>
+                    {avatarUrl && !uploadingAvatar && (
+                      <span style={{ ...base, fontSize:"12px", color:c.green }}>✓ {lang==="en"?"Saved":"Guardado"}</span>
+                    )}
+                  </div>
+                  <p style={{ ...base, fontSize:"11px", color:c.textMute, marginTop:"8px" }}>
+                    {lang==="en"?"JPG, PNG or GIF. Max 5MB.":"JPG, PNG o GIF. Máx 5MB."}
+                  </p>
                 </div>
               </div>
             </div>

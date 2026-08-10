@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { createClient } from "@supabase/supabase-js";
-import crypto from "crypto";
+
+export const runtime = "nodejs";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,6 +20,11 @@ async function getArtist() {
   } catch { return null; }
 }
 
+function hashPassword(password: string): string {
+  const crypto = require("crypto");
+  return crypto.createHash("sha256").update(password).digest("hex");
+}
+
 // Cambiar contraseña
 export async function POST(req: NextRequest) {
   const artist = await getArtist();
@@ -28,8 +34,7 @@ export async function POST(req: NextRequest) {
   if (!current_password || !new_password) return NextResponse.json({ error:"Missing fields" }, { status:400 });
   if (new_password.length < 6) return NextResponse.json({ error:"Password too short" }, { status:400 });
 
-  // Verificar contraseña actual usando crypto (igual que el login)
-  const hashCurrent = crypto.createHash("sha256").update(current_password).digest("hex");
+  const hashCurrent = hashPassword(current_password);
 
   const { data: account } = await supabase
     .from("artist_accounts")
@@ -41,12 +46,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error:"Wrong password" }, { status:400 });
   }
 
-  // Guardar nueva contraseña
-  const hashNew = crypto.createHash("sha256").update(new_password).digest("hex");
+  const hashNew = hashPassword(new_password);
 
-  await supabase.from("artist_accounts")
+  const { error } = await supabase.from("artist_accounts")
     .update({ password_hash: hashNew, must_change_password: false })
     .eq("id", artist.id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status:500 });
 
   return NextResponse.json({ ok: true });
 }
@@ -61,7 +67,7 @@ export async function PATCH(req: NextRequest) {
   if (!file) return NextResponse.json({ error:"No file" }, { status:400 });
 
   const ext    = file.name.split(".").pop();
-  const path   = `avatar-${artist.id}.${ext}`;
+  const path   = `avatar-${artist.id}-${Date.now()}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
 
   const { error } = await supabase.storage
@@ -72,9 +78,11 @@ export async function PATCH(req: NextRequest) {
 
   const { data } = supabase.storage.from("artists").getPublicUrl(path);
 
-  await supabase.from("artist_accounts")
+  const { error: updateError } = await supabase.from("artist_accounts")
     .update({ avatar_url: data.publicUrl })
     .eq("id", artist.id);
+
+  if (updateError) return NextResponse.json({ error: updateError.message }, { status:500 });
 
   return NextResponse.json({ ok: true, avatar_url: data.publicUrl });
 }
