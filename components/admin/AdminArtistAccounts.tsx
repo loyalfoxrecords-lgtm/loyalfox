@@ -248,6 +248,8 @@ export default function AdminArtistAccounts() {
   const [sendingCredentials, setSendingCredentials] = useState<string|null>(null);
   const [credentialsSent, setCredentialsSent]       = useState<Set<string>>(new Set());
   const [tempPasswords, setTempPasswords]           = useState<Record<string,string>>({});
+  const [releases, setReleases]                     = useState<any[]>([]);
+  const [loadingReleases, setLoadingReleases]       = useState(false);
 
   const load = async () => {
     const [{ data:a }, { data:r }] = await Promise.all([
@@ -561,6 +563,21 @@ export default function AdminArtistAccounts() {
   const readyAccounts    = externalAccounts.filter(a => getArtistData(a.artist_name).canPay);
   const accumulatingAccounts = externalAccounts.filter(a => !getArtistData(a.artist_name).canPay);
 
+  // Cargar releases del artista seleccionado
+  useEffect(() => {
+    if (!selectedAccount) { setReleases([]); return; }
+    setLoadingReleases(true);
+    fetch("/api/admin/release-submissions")
+      .then(r => r.json())
+      .then(data => {
+        const filtered = data.filter((r: any) =>
+          r.artist_accounts?.artist_name === selectedAccount.artist_name
+        );
+        setReleases(filtered);
+        setLoadingReleases(false);
+      })
+      .catch(() => setLoadingReleases(false));
+  }, [selectedArtist]);
   return (
     <div style={{ maxWidth:"1200px" }}>
 
@@ -876,6 +893,102 @@ export default function AdminArtistAccounts() {
                     </p>
                   </div>
                 )}
+
+                {/* Lanzamientos */}
+                <div style={{ borderBottom:`1px solid ${css.border}` }}>
+                  <p style={{ fontSize:"11px", fontWeight:600, color:css.textMute,
+                    padding:"12px 20px", borderBottom:`1px solid ${css.border}`,
+                    fontFamily:"system-ui", textTransform:"uppercase" as any,
+                    letterSpacing:"0.05em" }}>
+                    🚀 Lanzamientos
+                  </p>
+                  {loadingReleases ? (
+                    <p style={{ padding:"16px 20px", fontFamily:"system-ui",
+                      fontSize:"12px", color:css.textMute }}>Cargando...</p>
+                  ) : releases.length === 0 ? (
+                    <p style={{ padding:"16px 20px", fontFamily:"system-ui",
+                      fontSize:"12px", color:css.textMute, fontStyle:"italic" }}>
+                      Sin lanzamientos registrados
+                    </p>
+                  ) : (
+                    <div style={{ display:"flex", flexDirection:"column", gap:"0" }}>
+                      {releases.map((r: any, i: number) => (
+                        <div key={r.id} style={{ padding:"14px 20px",
+                          borderBottom: i < releases.length-1 ? `1px solid ${css.borderLight}` : "none",
+                          background: i%2===0 ? css.white : css.bg }}>
+                          <div style={{ display:"flex", justifyContent:"space-between",
+                            alignItems:"flex-start", marginBottom:"8px" }}>
+                            <div>
+                              <p style={{ fontFamily:"system-ui", fontSize:"13px",
+                                fontWeight:600, color:css.text }}>
+                                {r.track_title || <span style={{ color:css.textMute, fontStyle:"italic" }}>Sin título</span>}
+                              </p>
+                              <p style={{ fontFamily:"system-ui", fontSize:"11px",
+                                color:css.textMute, marginTop:"2px" }}>
+                                {r.artist_contracts?.title}
+                              </p>
+                            </div>
+                            <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:"4px" }}>
+                              <span style={{
+                                display:"inline-flex", padding:"2px 7px", borderRadius:"9999px",
+                                fontSize:"10px", fontWeight:500, fontFamily:"system-ui",
+                                color: r.artist_contracts?.status==="signed" ? css.green : css.yellow,
+                                background: r.artist_contracts?.status==="signed" ? css.greenBg : css.yellowBg,
+                                border:`1px solid ${r.artist_contracts?.status==="signed" ? css.greenBorder : css.yellowBorder}`,
+                              }}>
+                                {r.artist_contracts?.status==="signed" ? "✓ Firmado" : "Pendiente"}
+                              </span>
+                            </div>
+                          </div>
+                          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"6px" }}>
+                            {r.genre && (
+                              <div>
+                                <p style={{ fontFamily:"system-ui", fontSize:"10px",
+                                  color:css.textMute, marginBottom:"2px" }}>Género</p>
+                                <p style={{ fontFamily:"system-ui", fontSize:"12px", color:css.text }}>{r.genre}</p>
+                              </div>
+                            )}
+                            {r.submitted_at && (
+                              <div>
+                                <p style={{ fontFamily:"system-ui", fontSize:"10px",
+                                  color:css.textMute, marginBottom:"2px" }}>Enviado</p>
+                                <p style={{ fontFamily:"system-ui", fontSize:"12px", color:css.text }}>
+                                  {new Date(r.submitted_at).toLocaleDateString("es",{day:"numeric",month:"short",year:"numeric"})}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          {r.notes && (
+                            <p style={{ fontFamily:"system-ui", fontSize:"11px",
+                              color:css.textMute, marginTop:"6px", lineHeight:1.5 }}>
+                              📝 {r.notes}
+                            </p>
+                          )}
+                          <div style={{ display:"flex", gap:"6px", marginTop:"8px", flexWrap:"wrap" }}>
+                            {r.artist_contracts?.pdf_url && (
+                              <a href={r.artist_contracts.pdf_url} target="_blank" rel="noreferrer"
+                                style={{ fontFamily:"system-ui", fontSize:"11px",
+                                  padding:"3px 8px", borderRadius:"4px", textDecoration:"none",
+                                  color:css.textSub, border:`1px solid ${css.border}`,
+                                  background:css.white }}>
+                                Ver contrato
+                              </a>
+                            )}
+                            {r.artist_contracts?.signed_pdf_url && (
+                              <a href={r.artist_contracts.signed_pdf_url} target="_blank" rel="noreferrer"
+                                style={{ fontFamily:"system-ui", fontSize:"11px",
+                                  padding:"3px 8px", borderRadius:"4px", textDecoration:"none",
+                                  color:css.green, border:`1px solid ${css.greenBorder}`,
+                                  background:css.greenBg }}>
+                                ✓ PDF firmado
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 {/* Historial */}
                 <div>
