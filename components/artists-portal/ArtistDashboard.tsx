@@ -6,6 +6,7 @@ import {
   Tooltip, ResponsiveContainer, Cell
 } from "recharts";
 import ArtistSmartLinks from "./ArtistSmartLinks";
+import ArtistContracts from "./ArtistContracts";
 
 type Royalty = {
   id: string; month: string; total_streams: number;
@@ -847,83 +848,7 @@ export default function ArtistDashboard() {
 
         {/* CONTRACTS */}
         {activeTab==="contracts" && (
-          <div style={{ maxWidth:"800px", display:"flex", flexDirection:"column", gap:"16px" }}>
-            <p style={{ ...base, fontSize:"13px", color:c.textMute }}>
-              {lang==="en"
-                ? "Here you can view and sign contracts sent by LoyalFox Records."
-                : "Aquí puedes ver y firmar los contratos enviados por LoyalFox Records."}
-            </p>
-            {contracts.length===0 ? (
-              <div style={{ ...card, padding:"48px", textAlign:"center" }}>
-                <p style={{ ...base, fontSize:"13px", color:c.textMute }}>{t.contractsNoData}</p>
-              </div>
-            ) : contracts.map(contract => (
-              <div key={contract.id} style={{ ...card, padding:"24px" }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:"16px" }}>
-                  <div>
-                    <p style={{ ...base, fontSize:"16px", fontWeight:600, color:c.text, marginBottom:"4px" }}>{contract.title}</p>
-                    {contract.description && (
-                      <p style={{ ...base, fontSize:"13px", color:c.textMute }}>{contract.description}</p>
-                    )}
-                    <p style={{ ...base, fontSize:"11px", color:c.textMute, marginTop:"6px" }}>
-                      {lang==="en"?"Sent":"Enviado"}: {new Date(contract.created_at).toLocaleDateString(lang==="en"?"en":"es",{day:"numeric",month:"long",year:"numeric"})}
-                    </p>
-                  </div>
-                  <span style={badge(contract.status==="signed")}>
-                    {contract.status==="signed" ? t.contractsSigned : t.contractsPending}
-                  </span>
-                </div>
-
-                {contract.status==="signed" && contract.signature_url && (
-                  <div style={{ padding:"12px", background:c.greenBg, borderRadius:"6px",
-                    border:`1px solid ${c.greenBorder}`, marginBottom:"16px",
-                    display:"flex", alignItems:"center", gap:"12px" }}>
-                    <span style={{ color:c.green, fontSize:"16px" }}>✓</span>
-                    <div>
-                      <p style={{ ...base, fontSize:"13px", color:c.green, fontWeight:500 }}>
-                        {t.contractsSignedMsg}
-                      </p>
-                      {contract.signed_at && (
-                        <p style={{ ...base, fontSize:"11px", color:c.green, marginTop:"2px" }}>
-                          {new Date(contract.signed_at).toLocaleDateString(lang==="en"?"en":"es",{day:"numeric",month:"long",year:"numeric"})}
-                        </p>
-                      )}
-                    </div>
-                    <img src={contract.signature_url} alt="firma"
-                      style={{ height:"40px", border:`1px solid ${c.greenBorder}`,
-                        borderRadius:"4px", background:c.white, padding:"4px", marginLeft:"auto" }} />
-                  </div>
-                )}
-
-                <div style={{ display:"flex", gap:"8px", flexWrap:"wrap" }}>
-                  <a href={contract.pdf_url} target="_blank" rel="noreferrer"
-                    style={{ ...base, padding:"7px 14px", borderRadius:"6px",
-                      border:`1px solid ${c.border}`, background:c.white,
-                      fontSize:"13px", fontWeight:500, color:c.textSub,
-                      textDecoration:"none", display:"inline-flex", alignItems:"center", gap:"6px" }}>
-                    📄 {t.contractsViewPdf}
-                  </a>
-                  {contract.status==="signed" && contract.signed_pdf_url && (
-                    <a href={contract.signed_pdf_url} target="_blank" rel="noreferrer"
-                      style={{ ...base, padding:"7px 14px", borderRadius:"6px",
-                        border:`1px solid ${c.greenBorder}`, background:c.greenBg,
-                        fontSize:"13px", fontWeight:500, color:c.green,
-                        textDecoration:"none", display:"inline-flex", alignItems:"center", gap:"6px" }}>
-                      ✅ {lang==="en"?"Download signed PDF":"Descargar PDF firmado"}
-                    </a>
-                  )}
-                  {contract.status==="pending" && (
-                    <button onClick={() => setSigningId(contract.id)} disabled={signingLoading}
-                      style={{ ...base, padding:"7px 18px", borderRadius:"6px", border:"none",
-                        background:c.accent, color:c.white, fontSize:"13px",
-                        fontWeight:600, cursor:"pointer", opacity:signingLoading?0.6:1 }}>
-                      ✍️ {signingLoading?t.contractsSigning:t.contractsSign}
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <ArtistContracts lang={lang} artistName={artistName} />
         )}
 
         {/* CHAT */}

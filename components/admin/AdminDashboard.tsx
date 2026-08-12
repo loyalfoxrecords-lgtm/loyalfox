@@ -16,13 +16,14 @@ import AdminArtistPress from "./AdminArtistPress";
 import AdminSendDemo from "./AdminSendDemo";
 import AdminMessages from "./AdminMessages";
 import AdminContracts from "./AdminContracts";
+import AdminReleases from "./AdminReleases";
 
 type Tab =
   | "home" | "analytics" | "tracks" | "playlists"
   | "artists" | "streamers" | "artist-accounts"
   | "streamer-accounts" | "posts" | "videos"
   | "instagram" | "press" | "send-demo"
-  | "messages" | "contracts";
+  | "messages" | "contracts" | "releases";
 
 const NAV = [
   { id:"home"              as Tab, label:"Inicio",            icon:"⊡", group:"main"      },
@@ -31,6 +32,7 @@ const NAV = [
   { id:"streamer-accounts" as Tab, label:"Streamers",         icon:"◎", group:"gestion"   },
   { id:"messages"          as Tab, label:"Mensajes",          icon:"💬", group:"gestion"   },
   { id:"contracts"         as Tab, label:"Contratos",         icon:"📄", group:"gestion"   },
+  { id:"releases"          as Tab, label:"Lanzamientos",      icon:"🚀", group:"gestion"   },
   { id:"tracks"            as Tab, label:"Tracks",            icon:"▶", group:"contenido" },
   { id:"playlists"         as Tab, label:"Playlists",         icon:"▤", group:"contenido" },
   { id:"artists"           as Tab, label:"Perfiles artistas", icon:"◉", group:"contenido" },
@@ -410,6 +412,7 @@ export default function AdminDashboard() {
                       { id:"artist-accounts" as Tab, label:"Artistas",   icon:"♪", desc:"Regalías y pagos"   },
                       { id:"messages"        as Tab, label:"Mensajes",   icon:"💬", desc:"Chat con artistas"  },
                       { id:"contracts"       as Tab, label:"Contratos",  icon:"📄", desc:"Firmas digitales"   },
+                      { id:"releases"        as Tab, label:"Lanzamientos",icon:"🚀", desc:"Info de releases"  },
                     ].map((item) => (
                       <button key={item.id} onClick={() => setActive(item.id)}
                         style={{ padding:"16px 20px", background:css.white, border:"none",
@@ -441,6 +444,7 @@ export default function AdminDashboard() {
           {active === "send-demo"         && <AdminSendDemo />}
           {active === "messages"          && <AdminMessages />}
           {active === "contracts"         && <AdminContracts />}
+          {active === "releases"          && <AdminReleases />}
         </div>
       </div>
     </div>
