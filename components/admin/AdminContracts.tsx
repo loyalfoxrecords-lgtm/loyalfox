@@ -40,17 +40,39 @@ export default function AdminContracts() {
       alert("Selecciona un artista, pon un título y sube el PDF"); return;
     }
     setUploading(true);
-    const fd = new FormData();
-    fd.append("file", file);
-    fd.append("artist_account_id", form.artist_account_id);
-    fd.append("artist_name", selectedArtist?.artist_name||"");
-    fd.append("title", form.title);
-    fd.append("description", form.description);
-    const res = await fetch("/api/admin/contracts", { method:"POST", body:fd });
-    if (!res.ok) { alert("Error al subir el contrato"); setUploading(false); return; }
-    setForm({ artist_account_id:"", title:"", description:"" });
-    setFile(null);
-    await load();
+    try {
+      // Subir PDF directamente a Supabase Storage desde el frontend
+      const { createClient } = await import("@supabase/supabase-js");
+      const sb = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      const filename = `contract-${form.artist_account_id}-${Date.now()}.pdf`;
+      const { error: uploadError } = await sb.storage
+        .from("contracts")
+        .upload(filename, file, { contentType:"application/pdf", upsert:true });
+      if (uploadError) { alert("Error al subir el PDF: " + uploadError.message); setUploading(false); return; }
+      const { data: urlData } = sb.storage.from("contracts").getPublicUrl(filename);
+
+      // Guardar en base de datos via API (solo JSON, sin el archivo)
+      const res = await fetch("/api/admin/contracts", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          artist_account_id: form.artist_account_id,
+          artist_name: selectedArtist?.artist_name || "",
+          title: form.title,
+          description: form.description,
+          pdf_url: urlData.publicUrl,
+        }),
+      });
+      if (!res.ok) { alert("Error al guardar el contrato"); setUploading(false); return; }
+      setForm({ artist_account_id:"", title:"", description:"" });
+      setFile(null);
+      await load();
+    } catch (err) {
+      alert("Error al subir el contrato");
+    }
     setUploading(false);
   };
 

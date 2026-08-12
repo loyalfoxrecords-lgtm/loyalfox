@@ -1026,21 +1026,37 @@ export default function ArtistDashboard() {
                         onChange={async e => {
                           const file = e.target.files?.[0];
                           if (!file) return;
-                          if (file.size > 5*1024*1024) {
-                            alert(lang==="en"?"Max file size is 5MB":"El archivo no puede superar 5MB");
-                            return;
-                          }
                           setUploadingAvatar(true);
                           try {
+                            // Comprimir imagen antes de subir
+                            const compressedBlob = await new Promise<Blob>((resolve, reject) => {
+                              const img = new Image();
+                              const url = URL.createObjectURL(file);
+                              img.onload = () => {
+                                const MAX = 800;
+                                let { width, height } = img;
+                                if (width > MAX || height > MAX) {
+                                  if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+                                  else { width = Math.round(width * MAX / height); height = MAX; }
+                                }
+                                const canvas = document.createElement("canvas");
+                                canvas.width = width; canvas.height = height;
+                                canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+                                URL.revokeObjectURL(url);
+                                canvas.toBlob(blob => blob ? resolve(blob) : reject(), "image/jpeg", 0.8);
+                              };
+                              img.onerror = reject;
+                              img.src = url;
+                            });
+
                             const { createClient } = await import("@supabase/supabase-js");
                             const sb = createClient(
                               process.env.NEXT_PUBLIC_SUPABASE_URL!,
                               process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
                             );
-                            const ext  = file.name.split(".").pop();
-                            const path = `avatar-${Date.now()}.${ext}`;
+                            const path = `avatar-${Date.now()}.jpg`;
                             const { error: uploadErr } = await sb.storage
-                              .from("artists").upload(path, file, { upsert:true });
+                              .from("artists").upload(path, compressedBlob, { contentType:"image/jpeg", upsert:true });
                             if (uploadErr) throw uploadErr;
                             const { data: urlData } = sb.storage.from("artists").getPublicUrl(path);
                             const res = await fetch("/api/artists-portal/profile", {

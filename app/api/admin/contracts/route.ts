@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
-import jwt from "jsonwebtoken";
+import { jwtVerify } from "jose";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,8 +11,11 @@ const supabase = createClient(
 async function isAdmin() {
   const token = (await cookies()).get("admin_token")?.value;
   if (!token) return false;
-  try { jwt.verify(token, process.env.JWT_SECRET!); return true; }
-  catch { return false; }
+  try {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+    await jwtVerify(token, secret);
+    return true;
+  } catch { return false; }
 }
 
 export async function GET() {
@@ -24,37 +27,22 @@ export async function GET() {
   return NextResponse.json(data || []);
 }
 
+// Ahora recibe JSON con pdf_url ya subida desde el frontend
 export async function POST(req: NextRequest) {
   if (!await isAdmin()) return NextResponse.json({ error:"Unauthorized" }, { status:401 });
 
-  const formData = await req.formData();
-  const file     = formData.get("file") as File;
-  const artist_account_id = formData.get("artist_account_id") as string;
-  const artist_name       = formData.get("artist_name") as string;
-  const title             = formData.get("title") as string;
-  const description       = formData.get("description") as string;
+  const { artist_account_id, artist_name, title, description, pdf_url } = await req.json();
 
-  if (!file || !artist_account_id || !title) {
+  if (!artist_account_id || !title || !pdf_url) {
     return NextResponse.json({ error:"Missing fields" }, { status:400 });
   }
-
-  const buffer   = Buffer.from(await file.arrayBuffer());
-  const filename = `contract-${artist_account_id}-${Date.now()}.pdf`;
-
-  const { error: uploadError } = await supabase.storage
-    .from("contracts")
-    .upload(filename, buffer, { contentType:"application/pdf", upsert:true });
-
-  if (uploadError) return NextResponse.json({ error:uploadError.message }, { status:500 });
-
-  const { data: urlData } = supabase.storage.from("contracts").getPublicUrl(filename);
 
   const { data, error } = await supabase.from("artist_contracts").insert({
     artist_account_id,
     artist_name,
     title,
     description,
-    pdf_url: urlData.publicUrl,
+    pdf_url,
     status: "pending",
   }).select().single();
 
