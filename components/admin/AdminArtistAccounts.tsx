@@ -10,6 +10,9 @@ type ArtistAccount = {
   royalty_percent: number; is_own_artist: boolean;
   paypal_email: string; bank_iban: string;
   payment_method: string; notes: string;
+  full_name: string; city: string;
+  url_spotify_artist: string; url_soundcloud: string; url_apple_artist: string;
+  avatar_url: string;
 };
 type Royalty = {
   id: string; artist_name: string; month: string;
@@ -796,6 +799,45 @@ export default function AdminArtistAccounts() {
                     </>
                   )}
                 </div>
+
+                {/* Perfil del artista */}
+                {(selectedAccount.full_name || selectedAccount.city ||
+                  selectedAccount.url_spotify_artist || selectedAccount.url_soundcloud ||
+                  selectedAccount.url_apple_artist) && (
+                  <div style={{ padding:"16px 20px", borderBottom:`1px solid ${css.border}` }}>
+                    <p style={{ fontSize:"11px", fontWeight:600, color:css.textMute,
+                      fontFamily:"system-ui", textTransform:"uppercase" as any,
+                      letterSpacing:"0.05em", marginBottom:"10px" }}>
+                      👤 Perfil del artista
+                    </p>
+                    <div style={{ display:"flex", flexDirection:"column", gap:"6px" }}>
+                      {[
+                        { label:"Nombre real",   value:selectedAccount.full_name },
+                        { label:"Ciudad",        value:selectedAccount.city },
+                        { label:"Email",         value:selectedAccount.email },
+                      ].map((f,i) => f.value ? (
+                        <div key={i} style={{ display:"grid", gridTemplateColumns:"90px 1fr", gap:"6px" }}>
+                          <p style={{ fontFamily:"system-ui", fontSize:"11px", color:css.textMute }}>{f.label}</p>
+                          <p style={{ fontFamily:"system-ui", fontSize:"12px", color:css.text, wordBreak:"break-all" }}>{f.value}</p>
+                        </div>
+                      ) : null)}
+                      {[
+                        { label:"Spotify",      value:selectedAccount.url_spotify_artist },
+                        { label:"SoundCloud",   value:selectedAccount.url_soundcloud },
+                        { label:"Apple Music",  value:selectedAccount.url_apple_artist },
+                      ].map((f,i) => f.value ? (
+                        <div key={i} style={{ display:"grid", gridTemplateColumns:"90px 1fr", gap:"6px" }}>
+                          <p style={{ fontFamily:"system-ui", fontSize:"11px", color:css.textMute }}>{f.label}</p>
+                          <a href={f.value} target="_blank" rel="noreferrer"
+                            style={{ fontFamily:"system-ui", fontSize:"12px", color:css.blue,
+                              textDecoration:"none", wordBreak:"break-all" }}>
+                            {f.value.replace("https://","").slice(0,28)}...
+                          </a>
+                        </div>
+                      ) : null)}
+                    </div>
+                  </div>
+                )}
 
                 {/* Enviar acceso al portal */}
                 {!selectedAccount.is_own_artist && (
