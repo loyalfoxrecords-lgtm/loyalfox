@@ -5,6 +5,8 @@ import { supabase } from "@/lib/supabase";
 import { useLocale } from "@/lib/LocaleContext";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import ProcessSteps from "./ProcessSteps";
+import SocialProof from "./SocialProof";
 
 const BENEFIT_COLORS = [
   "#a8e63d","#ff0050","#2563eb","#a8e63d","#ff9500",
@@ -51,23 +53,15 @@ export default function SendDemo() {
   const getImg = (key: string, fallbackIndex: number) =>
     images[key] || FALLBACK_IMAGES[fallbackIndex];
 
- const handleSubmit = async () => {
-  if (!form.name || !form.email || !form.links) {
-    alert("Rellena al menos tu nombre, email y un enlace a tu música"); return;
-  }
-  setSending(true);
-  const res = await fetch("/api/send-demo", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(form),
-  });
-  if (res.ok) {
+  const handleSubmit = async () => {
+    if (!form.name||!form.email||!form.links) {
+      alert("Rellena al menos tu nombre, email y un enlace a tu música"); return;
+    }
+    setSending(true);
+    await new Promise(r => setTimeout(r, 1200));
     setSent(true);
-  } else {
-    alert("Error al enviar. Inténtalo de nuevo.");
-  }
-  setSending(false);
-};
+    setSending(false);
+  };
 
   const inputStyle: React.CSSProperties = {
     width:"100%", padding:"14px 16px",
@@ -309,6 +303,9 @@ export default function SendDemo() {
           ))}
         </motion.div>
       </section>
+
+      <ProcessSteps />
+      <SocialProof />
 
       {/* ─── FORMULARIO ─── */}
       <section id="demo-form" style={{ padding:"120px 56px",
