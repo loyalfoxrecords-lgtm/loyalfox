@@ -17,22 +17,26 @@ import AdminSendDemo from "./AdminSendDemo";
 import AdminMessages from "./AdminMessages";
 import AdminContracts from "./AdminContracts";
 import AdminRoyalties from "./AdminRoyalties";
+import AdminArtistHub from "./AdminArtistHub";
+import AdminTestimonials from "./AdminTestimonials";
 
 type Tab =
   | "home" | "analytics" | "tracks" | "playlists"
   | "artists" | "streamers" | "artist-accounts"
   | "streamer-accounts" | "posts" | "videos"
   | "instagram" | "press" | "send-demo"
-  | "messages" | "contracts" | "royalties";
+  | "messages" | "contracts" | "royalties" | "artists-hub" | "testimonials";
 
 const NAV = [
   { id:"home"              as Tab, label:"Inicio",            icon:"⊡", group:"main"      },
   { id:"analytics"         as Tab, label:"Analytics",         icon:"↗", group:"main"      },
-  { id:"artist-accounts"   as Tab, label:"Artistas",          icon:"♪", group:"gestion"   },
+  { id:"artists-hub"       as Tab, label:"Artistas",          icon:"♪", group:"gestion"   },
+  { id:"artist-accounts"   as Tab, label:"Cuentas y accesos", icon:"⚙", group:"gestion"   },
   { id:"streamer-accounts" as Tab, label:"Streamers",         icon:"◎", group:"gestion"   },
   { id:"royalties"         as Tab, label:"Regalías",          icon:"$", group:"gestion"   },
   { id:"messages"          as Tab, label:"Mensajes",          icon:"💬", group:"gestion"   },
   { id:"contracts"         as Tab, label:"Contratos",         icon:"📄", group:"gestion"   },
+  { id:"testimonials"      as Tab, label:"Testimonios",       icon:"❝", group:"contenido" },
   { id:"tracks"            as Tab, label:"Tracks",            icon:"▶", group:"contenido" },
   { id:"playlists"         as Tab, label:"Playlists",         icon:"▤", group:"contenido" },
   { id:"artists"           as Tab, label:"Perfiles artistas", icon:"◉", group:"contenido" },
@@ -78,7 +82,7 @@ export const css = {
 };
 
 export default function AdminDashboard() {
-  const [active, setActive] = useState<Tab>("home");
+  const [active, setActive] = useState<Tab>("artists-hub");
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [pendingContracts, setPendingContracts] = useState(0);
   const [summary, setSummary] = useState({
@@ -302,7 +306,7 @@ export default function AdminDashboard() {
               </div>
             )}
             {summary.readyToPay.length > 0 && (
-              <div onClick={() => setActive("artist-accounts")}
+              <div onClick={() => setActive("artists-hub")}
                 style={{ display:"flex", alignItems:"center", gap:"6px", padding:"6px 12px",
                   borderRadius:"6px", cursor:"pointer", background:css.greenBg,
                   border:`1px solid ${css.greenBorder}` }}>
@@ -368,7 +372,7 @@ export default function AdminDashboard() {
                   <div style={{ padding:"16px 20px", borderBottom:`1px solid ${css.border}`,
                     display:"flex", alignItems:"center", justifyContent:"space-between" }}>
                     <p style={{ fontSize:"13px", fontWeight:600, color:css.text }}>Pagos pendientes</p>
-                    <button onClick={() => setActive("artist-accounts")}
+                    <button onClick={() => setActive("artists-hub")}
                       style={{ fontSize:"12px", color:css.blue, background:"none", border:"none", cursor:"pointer", fontWeight:500 }}>
                       Ver todos →
                     </button>
@@ -409,7 +413,7 @@ export default function AdminDashboard() {
                   <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1px", background:css.border }}>
                     {[
                       { id:"analytics"       as Tab, label:"Analytics",  icon:"↗", desc:"Ver estadísticas"   },
-                      { id:"artist-accounts" as Tab, label:"Artistas",   icon:"♪", desc:"Regalías y pagos"   },
+                      { id:"artists-hub"     as Tab, label:"Artistas",   icon:"♪", desc:"Regalías y pagos"   },
                       { id:"messages"        as Tab, label:"Mensajes",   icon:"💬", desc:"Chat con artistas"  },
                       { id:"contracts"       as Tab, label:"Contratos",  icon:"📄", desc:"Firmas digitales"   },
                     ].map((item) => (
@@ -434,6 +438,7 @@ export default function AdminDashboard() {
           {active === "tracks"            && <AdminTracks />}
           {active === "artists"           && <AdminArtists />}
           {active === "streamers"         && <AdminStreamers />}
+          {active === "artists-hub"       && <AdminArtistHub onNavigate={(t) => setActive(t as Tab)} />}
           {active === "artist-accounts"   && <AdminArtistAccounts />}
           {active === "streamer-accounts" && <AdminStreamerAccounts />}
           {active === "posts"             && <AdminPosts />}
@@ -444,6 +449,7 @@ export default function AdminDashboard() {
           {active === "messages"          && <AdminMessages />}
           {active === "contracts"         && <AdminContracts />}
           {active === "royalties"         && <AdminRoyalties />}
+          {active === "testimonials"      && <AdminTestimonials />}
         </div>
       </div>
     </div>
