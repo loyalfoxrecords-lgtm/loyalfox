@@ -16,23 +16,23 @@ import AdminArtistPress from "./AdminArtistPress";
 import AdminSendDemo from "./AdminSendDemo";
 import AdminMessages from "./AdminMessages";
 import AdminContracts from "./AdminContracts";
-import AdminTestimonials from "./AdminTestimonials";
+import AdminRoyalties from "./AdminRoyalties";
 
 type Tab =
   | "home" | "analytics" | "tracks" | "playlists"
   | "artists" | "streamers" | "artist-accounts"
   | "streamer-accounts" | "posts" | "videos"
   | "instagram" | "press" | "send-demo"
-  | "messages" | "contracts" | "testimonials";
+  | "messages" | "contracts" | "royalties";
 
 const NAV = [
   { id:"home"              as Tab, label:"Inicio",            icon:"⊡", group:"main"      },
   { id:"analytics"         as Tab, label:"Analytics",         icon:"↗", group:"main"      },
   { id:"artist-accounts"   as Tab, label:"Artistas",          icon:"♪", group:"gestion"   },
   { id:"streamer-accounts" as Tab, label:"Streamers",         icon:"◎", group:"gestion"   },
+  { id:"royalties"         as Tab, label:"Regalías",          icon:"$", group:"gestion"   },
   { id:"messages"          as Tab, label:"Mensajes",          icon:"💬", group:"gestion"   },
   { id:"contracts"         as Tab, label:"Contratos",         icon:"📄", group:"gestion"   },
-  { id:"testimonials"      as Tab, label:"Testimonios",       icon:"❝", group:"contenido" },
   { id:"tracks"            as Tab, label:"Tracks",            icon:"▶", group:"contenido" },
   { id:"playlists"         as Tab, label:"Playlists",         icon:"▤", group:"contenido" },
   { id:"artists"           as Tab, label:"Perfiles artistas", icon:"◉", group:"contenido" },
@@ -443,7 +443,7 @@ export default function AdminDashboard() {
           {active === "send-demo"         && <AdminSendDemo />}
           {active === "messages"          && <AdminMessages />}
           {active === "contracts"         && <AdminContracts />}
-          {active === "testimonials"      && <AdminTestimonials />}
+          {active === "royalties"         && <AdminRoyalties />}
         </div>
       </div>
     </div>
