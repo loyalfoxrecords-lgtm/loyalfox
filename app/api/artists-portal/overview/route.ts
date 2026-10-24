@@ -28,6 +28,16 @@ export async function GET() {
     .eq("id", artist.id)
     .single();
 
+  // Última conexión (se ignora si la columna aún no existe)
+  try {
+    const { data: seen, error: seenErr } = await supabase.from("artist_accounts").select("last_seen_at").eq("id", artist.id).single();
+    if (!seenErr) {
+      const last = seen?.last_seen_at ? new Date(seen.last_seen_at).getTime() : 0;
+      if (Date.now() - last > 10 * 60 * 1000)
+        await supabase.from("artist_accounts").update({ last_seen_at: new Date().toISOString() }).eq("id", artist.id);
+    }
+  } catch { /* no bloquea el dashboard */ }
+
   const { data: contracts } = await supabase
     .from("artist_contracts")
     .select("id,title,status,signed_at,created_at")

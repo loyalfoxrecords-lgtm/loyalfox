@@ -15,6 +15,7 @@ type Account = {
   royalty_percent: number | null; is_own_artist: boolean; payment_method: string;
   paypal_email: string; bank_iban: string; avatar_url?: string; full_name?: string; city?: string;
   url_spotify_artist?: string; url_soundcloud?: string; url_apple_artist?: string;
+  last_seen_at?: string | null;
 };
 type Royalty = { id: string; artist_name: string; month: string; total_streams: number; gross_revenue: number; artist_share: number; paid: boolean; paid_at: string | null };
 type Contract = { id: string; artist_account_id: string; title: string; status: "pending" | "signed"; signed_at: string | null; created_at: string; pdf_url: string; signed_pdf_url: string | null };
@@ -34,6 +35,21 @@ async function all<T>(table: string, cols = "*"): Promise<T[]> {
   }
   return out;
 }
+
+const ago = (d?: string | null) => {
+  if (!d) return "Nunca";
+  const m = Math.floor((Date.now() - new Date(d).getTime()) / 60000);
+  if (m < 5) return "Ahora mismo";
+  if (m < 60) return `hace ${m} min`;
+  const h = Math.floor(m / 60); if (h < 24) return `hace ${h} h`;
+  const days = Math.floor(h / 24); if (days < 30) return `hace ${days} ${days === 1 ? "día" : "días"}`;
+  const mo = Math.floor(days / 30); return `hace ${mo} ${mo === 1 ? "mes" : "meses"}`;
+};
+const seenTone = (d?: string | null): "green" | "yellow" | "red" | "grey" => {
+  if (!d) return "red";
+  const days = (Date.now() - new Date(d).getTime()) / 86400000;
+  return days < 14 ? "green" : days < 60 ? "yellow" : "red";
+};
 
 const methodOf = (a: Account) => a.payment_method === "bank" ? "IBAN" : a.payment_method === "both" ? "PayPal + IBAN" : "PayPal";
 const destOf = (a: Account) => a.payment_method === "bank" ? a.bank_iban : a.payment_method === "both" ? [a.paypal_email, a.bank_iban].filter(Boolean).join("  ·  ") : a.paypal_email;
@@ -94,6 +110,7 @@ function Drawer({ row, royalties, lines, subs, onClose, onPaid, onNavigate }: {
           <button onClick={onClose} style={{ ...f, background: "none", border: "none", fontSize: 20, cursor: "pointer", color: css.textMute }}>✕</button>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+          <Chip text={`Última conexión: ${ago(a.last_seen_at)}`} tone={seenTone(a.last_seen_at)} />
           {[["Spotify", a.url_spotify_artist], ["SoundCloud", a.url_soundcloud], ["Apple Music", a.url_apple_artist]].filter(x => x[1]).map(x => (
             <a key={x[0]} href={x[1]} target="_blank" rel="noreferrer" style={{ ...f, fontSize: 12, color: css.blue, textDecoration: "none" }}>{x[0]} ↗</a>
           ))}
@@ -171,7 +188,7 @@ function Drawer({ row, royalties, lines, subs, onClose, onPaid, onNavigate }: {
   );
 }
 
-type Filter = "all" | "ready" | "nomethod" | "contract" | "own";
+type Filter = "all" | "ready" | "nomethod" | "contract" | "own" | "never";
 
 export default function AdminArtistHub({ onNavigate }: { onNavigate: (tab: string) => void }) {
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -227,6 +244,7 @@ export default function AdminArtistHub({ onNavigate }: { onNavigate: (tab: strin
     if (filter === "nomethod") return !r.a.is_own_artist && !r.hasMethod && r.pending > 0;
     if (filter === "contract") return !r.a.is_own_artist && (r.contracts.length === 0 || r.signed < r.contracts.length);
     if (filter === "own") return r.a.is_own_artist;
+    if (filter === "never") return !r.a.last_seen_at;
     return true;
   });
   const counts = {
@@ -234,6 +252,7 @@ export default function AdminArtistHub({ onNavigate }: { onNavigate: (tab: strin
     nomethod: rows.filter(r => !r.a.is_own_artist && !r.hasMethod && r.pending > 0).length,
     contract: rows.filter(r => !r.a.is_own_artist && (r.contracts.length === 0 || r.signed < r.contracts.length)).length,
     own: rows.filter(r => r.a.is_own_artist).length,
+    never: rows.filter(r => !r.a.last_seen_at).length,
   };
   const openRow = rows.find(r => r.a.id === open);
 
@@ -276,7 +295,7 @@ export default function AdminArtistHub({ onNavigate }: { onNavigate: (tab: strin
       </div>
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
-        {([["all", "Todos"], ["ready", "Para pagar"], ["nomethod", "Sin método de pago"], ["contract", "Contrato pendiente"], ["own", "Propios"]] as [Filter, string][]).map(([id, l]) => (
+        {([["all", "Todos"], ["ready", "Para pagar"], ["nomethod", "Sin método de pago"], ["contract", "Contrato pendiente"], ["own", "Propios"], ["never", "Nunca han entrado"]] as [Filter, string][]).map(([id, l]) => (
           <button key={id} onClick={() => setFilter(id)} style={{ ...f, fontSize: 12, fontWeight: 500, padding: "6px 12px", borderRadius: 9999, cursor: "pointer",
             border: `1px solid ${filter === id ? css.accent : css.border}`, background: filter === id ? css.accent : css.white, color: filter === id ? "#fff" : css.textSub }}>
             {l} <span style={{ opacity: 0.7 }}>{counts[id]}</span>
@@ -287,9 +306,9 @@ export default function AdminArtistHub({ onNavigate }: { onNavigate: (tab: strin
 
       <div style={hs.card}>
         <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 860 }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 960 }}>
             <thead><tr>
-              <th style={th}>Artista</th><th style={th}>Canciones</th><th style={th}>Ha generado</th><th style={th}>Falta por pagar</th><th style={th}>Cómo cobra</th><th style={th}>Contrato</th>
+              <th style={th}>Artista</th><th style={th}>Canciones</th><th style={th}>Ha generado</th><th style={th}>Falta por pagar</th><th style={th}>Cómo cobra</th><th style={th}>Contrato</th><th style={th}>Última conexión</th>
             </tr></thead>
             <tbody>
               {shown.map(r => (
@@ -326,9 +345,10 @@ export default function AdminArtistHub({ onNavigate }: { onNavigate: (tab: strin
                       : r.signed === r.contracts.length ? <Chip text={`✓ ${r.signed} firmado${r.signed > 1 ? "s" : ""}`} tone="green" />
                       : <Chip text={`${r.contracts.length - r.signed} por firmar`} tone="yellow" />}
                   </td>
+                  <td style={td}><Chip text={ago(r.a.last_seen_at)} tone={seenTone(r.a.last_seen_at)} /></td>
                 </tr>
               ))}
-              {shown.length === 0 && <tr><td colSpan={6} style={{ ...td, textAlign: "center", color: css.textMute, padding: 40 }}>Ningún artista con este filtro.</td></tr>}
+              {shown.length === 0 && <tr><td colSpan={7} style={{ ...td, textAlign: "center", color: css.textMute, padding: 40 }}>Ningún artista con este filtro.</td></tr>}
             </tbody>
           </table>
         </div>
