@@ -151,10 +151,10 @@ function Drawer({ row, royalties, lines, subs, onClose, onPaid, onNavigate }: {
           <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: `1px solid ${css.borderLight}` }}>
             {t.image_url ? <img src={t.image_url} alt="" width={36} height={36} style={{ borderRadius: 6, objectFit: "cover" }} /> : <div style={{ width: 36, height: 36, borderRadius: 6, background: css.accentBg }} />}
             <p style={{ ...f, flex: 1, fontSize: 13, fontWeight: 500, color: css.text }}>{t.name}</p>
-            {byTitle[t.name.toLowerCase()] !== undefined && <span style={{ ...f, fontSize: 12, color: css.green, fontWeight: 600 }}>{usd(byTitle[t.name.toLowerCase()])}</span>}
+            {byTitle[t.name.toLowerCase()] !== undefined && <span style={{ ...f, fontSize: 12, color: css.green, fontWeight: 600 }}>{usd(byTitle[t.name.toLowerCase()] * (a.is_own_artist ? 1 : pct))}</span>}
           </div>
         ))}
-        {Object.keys(byTitle).length > 0 && <p style={{ ...f, fontSize: 11, color: css.textMute, marginTop: 6 }}>El importe por canción es el bruto de las importaciones nuevas (Regalías).</p>}
+        {Object.keys(byTitle).length > 0 && <p style={{ ...f, fontSize: 11, color: css.textMute, marginTop: 6 }}>El importe por canción es la parte del artista, calculada desde las importaciones de Regalías.</p>}
 
         {section(`Contratos (${row.signed}/${row.contracts.length} firmados)`)}
         {row.contracts.length === 0 && <p style={{ ...f, fontSize: 13, color: css.textMute }}>Sin contratos. Súbelo desde la pestaña Contratos.</p>}
