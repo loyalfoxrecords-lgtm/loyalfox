@@ -349,6 +349,9 @@ function PayTab({ accounts, royalties, onDone }: { accounts: Account[]; royaltie
   }).filter(r => r.pending > 0).sort((x, y) => y.pending - x.pending);
 
   const ready = rows.filter(r => r.ready);
+  const active = new Set(accounts.filter(a => a.active).map(a => a.artist_name));
+  const own = new Set(accounts.filter(a => a.is_own_artist).map(a => a.artist_name));
+  const orphans = royalties.filter(r => !r.paid && !own.has(r.artist_name) && !active.has(r.artist_name) && Number(r.artist_share) > 0);
   const toggle = (n: string) => setSel(s => { const c = new Set(s); c.has(n) ? c.delete(n) : c.add(n); return c; });
   const chosen = ready.filter(r => sel.has(r.a.artist_name));
   const total = chosen.reduce((s, r) => s + r.pending, 0);
@@ -416,6 +419,18 @@ function PayTab({ accounts, royalties, onDone }: { accounts: Account[]; royaltie
           </div>
         ))}
       </div>
+      {orphans.length > 0 && (
+        <div style={hs.card}>
+          <div style={hs.cardHeader}><p style={hs.cardTitle}>Sin cuenta activa ({orphans.length})</p></div>
+          <p style={{ ...td, color: css.textMute }}>Estas regalías pertenecen a un nombre que no coincide con ninguna cuenta activa. Cuentan en el resumen pero no se pueden pagar desde aquí. Suelen venir de importaciones antiguas.</p>
+          {orphans.map(r => (
+            <div key={r.id} style={{ ...td, display: "flex", gap: 12 }}>
+              <span style={{ flex: 1 }}>{r.artist_name} · {String(r.month).slice(0, 7)}</span>
+              <b>{usd(Number(r.artist_share))}</b>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
