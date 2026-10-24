@@ -31,7 +31,7 @@ export async function GET() {
   // Última conexión (se ignora si la columna aún no existe)
   try {
     const { data: seen, error: seenErr } = await supabase.from("artist_accounts").select("last_seen_at").eq("id", artist.id).single();
-    if (!seenErr) {
+    if (!seenErr && !artist.imp) {
       const last = seen?.last_seen_at ? new Date(seen.last_seen_at).getTime() : 0;
       if (Date.now() - last > 10 * 60 * 1000)
         await supabase.from("artist_accounts").update({ last_seen_at: new Date().toISOString() }).eq("id", artist.id);
@@ -63,5 +63,6 @@ export async function GET() {
     contracts: contracts || [],
     submissions,
     unread: count || 0,
+    impersonating: !!artist.imp,
   });
 }

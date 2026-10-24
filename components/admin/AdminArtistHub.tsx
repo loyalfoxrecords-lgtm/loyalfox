@@ -89,6 +89,10 @@ function Drawer({ row, royalties, lines, subs, onClose, onPaid, onNavigate }: {
       body: JSON.stringify({ email: a.email, name: a.name, artist_name: a.artist_name, amount: row.pending, method: a.payment_method, paypal: a.paypal_email, iban: a.bank_iban }) }).catch(() => {});
     setBusy(false); onPaid();
   };
+  const viewAs = async () => {
+    const r = await fetch("/api/admin/impersonate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ artist_account_id: a.id }) });
+    if (r.ok) window.open("/artists-portal", "_blank"); else alert("No se pudo abrir su panel");
+  };
   const copy = async () => { try { await navigator.clipboard.writeText(a.payment_method === "bank" ? a.bank_iban : a.paypal_email || a.bank_iban); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* sin permiso */ } };
   const section = (t: string) => <p style={{ ...f, fontSize: 11, fontWeight: 600, color: css.textMute, textTransform: "uppercase", letterSpacing: "0.05em", margin: "22px 0 10px" }}>{t}</p>;
   const stat = (l: string, v: string, c: string = css.text) => (
@@ -179,6 +183,7 @@ function Drawer({ row, royalties, lines, subs, onClose, onPaid, onNavigate }: {
         ))}
 
         <div style={{ display: "flex", gap: 8, marginTop: 24, flexWrap: "wrap" }}>
+          <button style={{ ...hs.btnSmall, background: css.accent, color: "#fff", border: `1px solid ${css.accent}` }} onClick={viewAs}>Ver su panel</button>
           <button style={hs.btnSmall} onClick={() => onNavigate("messages")}>Escribirle</button>
           <button style={hs.btnSmall} onClick={() => onNavigate("contracts")}>Contratos</button>
           <button style={hs.btnSmall} onClick={() => onNavigate("artist-accounts")}>Editar cuenta</button>

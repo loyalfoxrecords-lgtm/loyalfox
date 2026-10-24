@@ -498,6 +498,17 @@ export default function ArtistDashboard() {
         />
       )}
 
+      {overview?.impersonating && (
+        <div style={{ background:c.text, color:c.white, padding:"10px 16px", display:"flex", alignItems:"center",
+          justifyContent:"center", gap:"14px", flexWrap:"wrap", ...base, fontSize:"13px" }}>
+          <span>👁 {lang==="en"?"Admin view: you are seeing":"Vista de admin: estás viendo el panel de"} <b>{artistName}</b> · {lang==="en"?"read only":"solo lectura"}</span>
+          <button onClick={async()=>{ await fetch("/api/artists-portal/logout",{method:"POST"}); window.close(); router.push("/admin"); }}
+            style={{ ...base, padding:"4px 12px", borderRadius:"6px", border:"1px solid rgba(255,255,255,0.4)", background:"transparent", color:c.white, fontSize:"12px", cursor:"pointer" }}>
+            {lang==="en"?"Exit":"Salir"}
+          </button>
+        </div>
+      )}
+
       {/* NAV */}
       <nav className="ad-nav" style={{ height:"60px", display:"flex", alignItems:"center", justifyContent:"space-between",
         padding:"0 32px", background:c.white, borderBottom:`1px solid ${c.border}`,

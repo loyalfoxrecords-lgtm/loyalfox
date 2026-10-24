@@ -9,6 +9,21 @@ const streamerSecret = new TextEncoder().encode(process.env.STREAMERS_JWT_SECRET
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Vista de admin como artista: sesión de SOLO LECTURA (bloquea cualquier escritura)
+  if (pathname.startsWith("/api/artists-portal")) {
+    const isWrite = req.method !== "GET" && req.method !== "HEAD";
+    if (isWrite && !pathname.endsWith("/logout") && !pathname.endsWith("/login")) {
+      const token = req.cookies.get("artist_token")?.value;
+      if (token) {
+        try {
+          const { payload } = await jwtVerify(token, artistSecret);
+          if (payload.imp) return NextResponse.json({ error: "read_only_admin_view" }, { status: 403 });
+        } catch { /* token inválido: lo gestiona cada ruta */ }
+      }
+    }
+    return NextResponse.next();
+  }
+
   if (pathname.startsWith("/admin")) {
     if (pathname === "/admin/login") return NextResponse.next();
     const token = req.cookies.get("admin_token")?.value;
@@ -45,5 +60,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/creators/:path*", "/artists-portal/:path*", "/streamers-portal/:path*"],
+  matcher: ["/admin/:path*", "/creators/:path*", "/artists-portal/:path*", "/streamers-portal/:path*", "/api/artists-portal/:path*"],
 };

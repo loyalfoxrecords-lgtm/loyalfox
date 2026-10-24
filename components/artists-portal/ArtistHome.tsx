@@ -10,6 +10,7 @@ export type Overview = {
   contracts: PipeContract[];
   submissions: PipeSubmission[];
   unread: number;
+  impersonating?: boolean;
 };
 type Royalty = { month: string; total_streams: number; artist_share: number; paid: boolean };
 type TrackRow = { store: string; streams: number; month: string };
