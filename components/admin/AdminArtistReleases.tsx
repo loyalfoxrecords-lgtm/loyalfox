@@ -69,6 +69,7 @@ export default function AdminArtistReleases({ artistAccountId }: { artistAccount
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [subs, setSubs] = useState<Sub[]>([]);
   const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
 
   const load = useCallback(async () => {
     const res = await fetch(`/api/admin/release-submissions?artist_account_id=${artistAccountId}`);
@@ -78,10 +79,12 @@ export default function AdminArtistReleases({ artistAccountId }: { artistAccount
   useEffect(() => { setLoading(true); load(); }, [load]);
 
   const patch = async (contractId: string, body: Record<string, any>) => {
-    await fetch("/api/admin/release-submissions", {
+    setErr("");
+    const r = await fetch("/api/admin/release-submissions", {
       method: "PATCH", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ contract_id: contractId, ...body }),
     });
+    if (!r.ok) { const d = await r.json().catch(() => ({})); setErr(d.error || `Error ${r.status}`); }
     await load();
   };
 
@@ -91,6 +94,7 @@ export default function AdminArtistReleases({ artistAccountId }: { artistAccount
         ...f, textTransform: "uppercase", letterSpacing: "0.05em" }}>
         Lanzamientos
       </p>
+      {err && <p style={{ ...f, fontSize: "12px", color: css.red, padding: "10px 20px", background: "#fef2f2" }}>No se pudo guardar: {err}</p>}
       {loading ? (
         <p style={{ ...f, fontSize: "13px", color: css.textMute, padding: "20px" }}>Cargando…</p>
       ) : contracts.length === 0 ? (
